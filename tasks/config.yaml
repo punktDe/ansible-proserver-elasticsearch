@@ -4,13 +4,10 @@
     path: "{{ config_filepath }}"
     regexp: "^{{ item.key|replace('.', '\\.') }}[\\s\\t]*:"
     line: "{{ item.key }}: {{ item.value }}"
+  when: item.value is not none
   loop_control:
     label: "{{ config_filepath }} {{ item.key }}={{ item.value }}"
-  with_items:
-    - key: cluster.name
-      value: "{{ elasticsearch.cluster.name }}"
-    - key: script.inline
-      value: "true"
+  with_dict: "{{ elasticsearch['elasticsearch.yml'] }}"
   vars:
     config_filepath: "{{ elasticsearch.prefix.config }}/elasticsearch.yml"
   notify: Restart Elasticsearch

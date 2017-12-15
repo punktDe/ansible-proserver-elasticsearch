@@ -1,0 +1,16 @@
+---
+- name: Configure Elasticsearch
+  lineinfile:
+    path: "{{ config_filepath }}"
+    regexp: "^{{ item.key|replace('.', '\\.') }}[\\s\\t]*:"
+    line: "{{ item.key }}: {{ item.value }}"
+  loop_control:
+    label: "{{ config_filepath }} {{ item.key }}={{ item.value }}"
+  with_items:
+    - key: cluster.name
+      value: "{{ elasticsearch.cluster.name }}"
+    - key: script.inline
+      value: "true"
+  vars:
+    config_filepath: "{{ elasticsearch.prefix.config }}/elasticsearch.yml"
+  notify: Restart Elasticsearch

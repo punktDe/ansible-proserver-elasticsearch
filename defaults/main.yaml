@@ -1,0 +1,5 @@
+---
+elasticsearch:
+  prefix:
+    config: /usr/local/etc/elasticsearch
+  cluster: {}

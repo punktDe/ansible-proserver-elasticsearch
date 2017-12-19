@@ -3,3 +3,7 @@ elasticsearch:
   prefix:
     config: /usr/local/etc/elasticsearch
   cluster: {}
+  elasticsearch.yml:
+    path.plugins: /usr/local/lib/elasticsearch/plugins
+    index.number_of_shards: 1
+    index.number_of_replicas: 0

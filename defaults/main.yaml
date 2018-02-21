@@ -4,6 +4,7 @@ elasticsearch:
     config: /usr/local/etc/elasticsearch
   cluster: {}
   elasticsearch.yml:
-    path.plugins: /usr/local/lib/elasticsearch/plugins
+    path.plugins: /var/db/elasticsearch/plugins
+    path.data: /var/db/elasticsearch/data
     index.number_of_shards: 1
     index.number_of_replicas: 0

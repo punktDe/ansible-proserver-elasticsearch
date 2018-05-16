@@ -4,10 +4,18 @@
     path: "{{ config_filepath }}"
     regexp: "^{{ item.key|replace('.', '\\.') }}[\\s\\t]*:"
     line: "{{ item.key }}: {{ item.value }}"
-  when: item.value is not none
+    state: "{{ 'present' if item.value is not none else 'absent' }}"
   loop_control:
     label: "{{ config_filepath }} {{ item.key }}={{ item.value }}"
   with_dict: "{{ elasticsearch['elasticsearch.yml'] }}"
   vars:
     config_filepath: "{{ elasticsearch.prefix.config }}/elasticsearch.yml"
+  notify: Restart Elasticsearch
+
+- name: Create directory for Elasticsearch scripts
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - /usr/local/etc/elasticsearch/scripts
   notify: Restart Elasticsearch

@@ -7,3 +7,4 @@ elasticsearch:
     network.host: _local_
     path.work:
     path.plugins:
+  log4j2.properties: {}

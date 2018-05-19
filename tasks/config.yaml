@@ -1,5 +1,5 @@
 ---
-- name: Configure Elasticsearch
+- name: Configure Elasticsearch (elasticsearch.yml)
   lineinfile:
     path: "{{ config_filepath }}"
     regexp: "^{{ item.key|replace('.', '\\.') }}[\\s\\t]*:"
@@ -10,6 +10,19 @@
   with_dict: "{{ elasticsearch['elasticsearch.yml'] }}"
   vars:
     config_filepath: "{{ elasticsearch.prefix.config }}/elasticsearch.yml"
+  notify: Restart Elasticsearch
+
+- name: Configure Elasticsearch (log4j2.properties)
+  lineinfile:
+    path: "{{ config_filepath }}"
+    regexp: "^{{ item.key|replace('.', '\\.') }}[\\s\\t]*="
+    line: "{{ item.key }} = {{ item.value }}"
+    state: "{{ 'present' if item.value is not none else 'absent' }}"
+  loop_control:
+    label: "{{ config_filepath }} {{ item.key }}={{ item.value }}"
+  with_dict: "{{ elasticsearch['log4j2.properties'] }}"
+  vars:
+    config_filepath: "{{ elasticsearch.prefix.config }}/log4j2.properties"
   notify: Restart Elasticsearch
 
 - name: Create directory for Elasticsearch scripts

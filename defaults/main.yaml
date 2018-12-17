@@ -4,7 +4,12 @@ elasticsearch:
     config: /usr/local/etc/elasticsearch
   cluster: {}
   elasticsearch.yml:
-    network.host: _local_
-    path.work:
-    path.plugins:
+    bootstrap:
+      system_call_filter: false
+    network:
+      host: _local_
+    path:
+      data: /var/db/elasticsearch
+      logs: /var/log/elasticsearch
+      scripts: /usr/local/libexec/elasticsearch
   log4j2.properties: {}

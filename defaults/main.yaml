@@ -11,5 +11,4 @@ elasticsearch:
     path:
       data: /var/db/elasticsearch
       logs: /var/log/elasticsearch
-      scripts: /usr/local/libexec/elasticsearch
   log4j2.properties: {}

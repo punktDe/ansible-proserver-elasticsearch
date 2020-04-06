@@ -30,5 +30,5 @@
     path: "{{ item }}"
     state: directory
   with_items:
-    - /usr/local/etc/elasticsearch/scripts
+    - "{{ elasticsearch.prefix.config }}/scripts"
   notify: Restart Elasticsearch

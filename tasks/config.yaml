@@ -15,7 +15,7 @@
 - name: Configure Elasticsearch (log4j2.properties)
   lineinfile:
     path: "{{ config_filepath }}"
-    regexp: "^{{ item.key|replace('.', '\\.') }}[\\s\\t]*="
+    regexp: "^{{ item.key|regex_escape }}[\\s\\t]*="
     line: "{{ item.key }} = {{ item.value }}"
     state: "{{ 'present' if item.value is not none else 'absent' }}"
   loop_control:

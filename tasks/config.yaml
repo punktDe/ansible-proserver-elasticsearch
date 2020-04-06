@@ -25,6 +25,19 @@
     config_filepath: "{{ elasticsearch.prefix.config }}/log4j2.properties"
   notify: Restart Elasticsearch
 
+- name: Configure Elasticsearch (jvm.options)
+  lineinfile:
+    path: "{{ config_filepath }}"
+    regexp: "^{{ item.key|regex_escape }}"
+    line: "{{ item.key }}{{ item.value }}"
+    state: "{{ 'present' if item.value is not none else 'absent' }}"
+  loop_control:
+    label: "{{ config_filepath }} {{ item.key }}{{ item.value }}"
+  with_dict: "{{ elasticsearch['jvm.options'] }}"
+  vars:
+    config_filepath: "{{ elasticsearch.prefix.config }}/jvm.options"
+  notify: Restart Elasticsearch
+
 - name: Create directory for Elasticsearch scripts
   file:
     path: "{{ item }}"
@@ -32,3 +45,9 @@
   with_items:
     - "{{ elasticsearch.prefix.config }}/scripts"
   notify: Restart Elasticsearch
+
+- name: Elasticsearch owns Elasticsearch configuration directory
+  file:
+    path: "{{ elasticsearch.prefix.config }}"
+    owner: elasticsearch
+    group: elasticsearch

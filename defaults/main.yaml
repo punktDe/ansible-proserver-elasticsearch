@@ -11,4 +11,9 @@ elasticsearch:
     path:
       data: /var/db/elasticsearch
       logs: /var/log/elasticsearch
+    xpack:
+      ml:
+        enabled: no
   log4j2.properties: {}
+  jvm.options:
+    "-Djna.tmpdir": =/var/db/elasticsearch/jna

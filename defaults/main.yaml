@@ -18,6 +18,10 @@ elasticsearch:
         {%- endif -%}
     network:
       host: _local_
+    cluster:
+      name: "{{ inventory_hostname }}"
+    node:
+      name: "{{ inventory_hostname }}"
     path:
       data: >-
         {%- if ansible_system == 'Linux' -%}

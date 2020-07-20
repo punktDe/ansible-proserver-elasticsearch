@@ -47,6 +47,7 @@
   notify: Restart Elasticsearch
 
 - name: Elasticsearch owns Elasticsearch configuration directory
+  when: ansible_system == 'FreeBSD'
   file:
     path: "{{ elasticsearch.prefix.config }}"
     owner: elasticsearch

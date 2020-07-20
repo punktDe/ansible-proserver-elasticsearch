@@ -1,19 +1,43 @@
 ---
 elasticsearch:
   prefix:
-    config: /usr/local/etc/elasticsearch
+    config: >-
+      {%- if ansible_system == 'Linux' -%}
+        /etc/elasticsearch
+      {%- else -%}
+        /usr/local/etc/elasticsearch
+      {%- endif -%}
   cluster: {}
   elasticsearch.yml:
     bootstrap:
-      system_call_filter: false
+      system_call_filter: >-
+        {%- if ansible_system == 'Linux' -%}
+          {{ true }}
+        {%- else -%}
+          {{ false }}
+        {%- endif -%}
     network:
       host: _local_
     path:
-      data: /var/db/elasticsearch
+      data: >-
+        {%- if ansible_system == 'Linux' -%}
+          /var/lib/elasticsearch
+        {%- else -%}
+          /var/db/elasticsearch
+        {%- endif -%}
       logs: /var/log/elasticsearch
     xpack:
       ml:
         enabled: no
   log4j2.properties: {}
   jvm.options:
-    "-Djna.tmpdir": =/var/db/elasticsearch/jna
+    "-Djna.tmpdir": >-
+      {%- if ansible_system == 'Linux' -%}
+        =/var/lib/elasticsearch/jna
+      {%- else -%}
+        =/var/db/elasticsearch/jna
+      {%- endif -%}
+  repository:
+    apt:
+      key_url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+      repository: deb https://artifacts.elastic.co/packages/7.x/apt stable main

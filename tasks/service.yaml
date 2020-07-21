@@ -1,11 +1,7 @@
 ---
-- name: Enable service
-  lineinfile: path="{{ item.path }}" regexp="{{ item.regexp }}" line="{{ item.line }}"
-  loop_control:
-    label: "{{ item.path }}"
-  with_items:
-    - path: /etc/rc.conf
-      regexp: "^elasticsearch_enable="
-      line: 'elasticsearch_enable="YES"'
+- name: Enable Elasticsearch
+  service:
+    name: elasticsearch
+    enabled: yes
   notify:
     - Start Elasticsearch

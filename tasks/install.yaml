@@ -1,0 +1,23 @@
+- when: ansible_distribution == 'Ubuntu'
+  block:
+    - name: Add Elasticsearch repository key
+      apt_key:
+        url: "{{ elasticsearch.repository.apt.key_url }}"
+
+    - name: Add Elasticsearch repository
+      loop:
+        - /etc/apt/sources.list.d/elasticsearch.list
+      copy:
+        content: |
+          {{ elasticsearch.repository.apt.repository }}
+        dest: "{{ item }}"
+      register: elasticsearch_add_apt_repository
+
+    - name: Update apt cache
+      when: elasticsearch_add_apt_repository.changed
+      apt:
+        update_cache: yes
+
+    - name: Install Elasticsearch
+      apt:
+        name: elasticsearch

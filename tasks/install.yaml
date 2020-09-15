@@ -1,12 +1,12 @@
 - when: ansible_distribution == 'Ubuntu'
   block:
-    - name: Add Elasticsearch repository key
+    - name: Add Elastic repository key
       apt_key:
         url: "{{ elasticsearch.repository.apt.key_url }}"
 
-    - name: Add Elasticsearch repository
+    - name: Add Elastic repository
       loop:
-        - /etc/apt/sources.list.d/elasticsearch.list
+        - /etc/apt/sources.list.d/elastic.list
       copy:
         content: |
           {{ elasticsearch.repository.apt.repository }}

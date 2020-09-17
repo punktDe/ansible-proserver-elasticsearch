@@ -1,0 +1,37 @@
+- when: elasticsearch.transport_security.ca_from
+  block:
+    - when: elasticsearch.transport_security.ca_from == inventory_hostname
+      any_errors_fatal: yes
+      block:
+        - name: Generate CA for Elasticsearch transport security
+          loop:
+            - "{{ elasticsearch.prefix.config }}/ca.p12"
+          shell: |
+            {{ elasticsearch.prefix.bin|quote }}/elasticsearch-certutil ca --out {{ item|quote }} --pass ""
+          args:
+            creates: "{{ item }}"
+
+        - name: Read CA for Elasticsearch transport security
+          loop:
+            - "{{ elasticsearch.prefix.config }}/ca.p12"
+          slurp:
+            src: "{{ elasticsearch.prefix.config }}/ca.p12"
+          register: elasticsearch_read_ca_result
+
+    - when: elasticsearch.transport_security.ca_from != inventory_hostname
+      block:
+        - name: Write CA for Elasticsearch transport security
+          loop:
+            - "{{ elasticsearch.prefix.config }}/ca.p12"
+          copy:
+            content: "{{ hostvars[elasticsearch.transport_security.ca_from].elasticsearch_read_ca_result.results.0.content|b64decode }}"
+            dest: "{{ item }}"
+
+    - name: Generate certificate for Elasticsearch transport security
+      shell: |
+        set -e
+        {{ elasticsearch.prefix.bin|quote }}/elasticsearch-certutil cert --ca {{ elasticsearch.prefix.config|quote }}/ca.p12 --ca-pass "" --dns {{ elasticsearch.transport_security.cert_dns|join(',')|quote }} --ip {{ elasticsearch.transport_security.cert_ips|join(',')|quote }} --pass "" --out {{ elasticsearch.prefix.config|quote }}/cert.p12
+        chmod g+r {{ elasticsearch.prefix.config|quote }}/cert.p12
+      args:
+        creates: "{{ elasticsearch.prefix.config }}/cert.p12"
+      notify: Restart Elasticsearch

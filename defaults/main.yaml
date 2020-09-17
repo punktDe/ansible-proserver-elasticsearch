@@ -7,7 +7,17 @@ elasticsearch:
       {%- else -%}
         /usr/local/etc/elasticsearch
       {%- endif -%}
+    bin: >-
+      {%- if ansible_system == 'Linux' -%}
+        /usr/share/elasticsearch/bin
+      {%- else -%}
+        /usr/local/lib/elasticsearch/bin
+      {%- endif -%}
   cluster: {}
+  transport_security:
+    ca_from:
+    cert_dns: "{{ [inventory_hostname] + [ansible_nodename] }}"
+    cert_ips: "{{ ansible_all_ipv4_addresses + ansible_all_ipv6_addresses }}"
   elasticsearch.yml:
     bootstrap:
       system_call_filter: >-

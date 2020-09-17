@@ -21,3 +21,8 @@
     - name: Install Elasticsearch
       apt:
         name: elasticsearch
+
+- name: Enable Elasticsearch
+  service:
+    name: elasticsearch
+    enabled: yes

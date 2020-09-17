@@ -1,7 +1,5 @@
----
-- name: Enable Elasticsearch
+- name: Start Elasticsearch
   service:
     name: elasticsearch
-    enabled: yes
-  notify:
-    - Start Elasticsearch
+    state: started
+  register: elasticsearch_service_start_result

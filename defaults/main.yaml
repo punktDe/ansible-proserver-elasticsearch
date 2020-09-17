@@ -32,7 +32,7 @@ elasticsearch:
       logs: /var/log/elasticsearch
     xpack:
       ml:
-        enabled: no
+        enabled: "{{ ansible_system == 'Linux' }}"
   log4j2.properties: {}
   jvm.options:
     "-Djna.tmpdir": >-

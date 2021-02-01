@@ -3,3 +3,4 @@
 - import_tasks: transport_security.yaml
 - import_tasks: config.yaml
 - import_tasks: service.yaml
+- import_tasks: plugins.yaml

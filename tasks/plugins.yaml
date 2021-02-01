@@ -1,0 +1,24 @@
+- vars:
+    elasticsearch_plugins: "{{ elasticsearch.plugins|dict2items|selectattr('value', 'eq', true)|map(attribute='key')|list }}"
+  when: elasticsearch_plugins|length > 0
+  block:
+    - name: Get installed Elasticsearch plugins
+      shell: |
+        {{ elasticsearch.prefix.bin|quote }}/elasticsearch-plugin list
+      changed_when: false
+      register: elasticsearch_plugin_list
+
+    - name: Install Elasticsearch plugins
+      loop: "{{ elasticsearch_plugins }}"
+      when: item not in elasticsearch_plugin_list.stdout_lines
+      environment:
+        ES_JAVA_OPTS: >
+          {% if elasticsearch.http_proxy %}
+          -Dhttp.proxyHost={{ elasticsearch.http_proxy|urlsplit('hostname') }}
+          -Dhttp.proxyPort={{ elasticsearch.http_proxy|urlsplit('port') }}
+          -Dhttps.proxyHost={{ elasticsearch.http_proxy|urlsplit('hostname') }}
+          -Dhttps.proxyPort={{ elasticsearch.http_proxy|urlsplit('port') }}
+          {% endif %}
+      shell: >
+        {{ elasticsearch.prefix.bin|quote }}/elasticsearch-plugin install --batch {{ item|quote }}
+      notify: Restart Elasticsearch

@@ -55,3 +55,5 @@ elasticsearch:
     apt:
       key_url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
       repository: deb https://artifacts.elastic.co/packages/7.x/apt stable main
+  plugins: {}
+  http_proxy:

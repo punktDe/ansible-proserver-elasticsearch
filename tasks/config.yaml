@@ -46,9 +46,10 @@
     - "{{ elasticsearch.prefix.config }}/scripts"
   notify: Restart Elasticsearch
 
-- name: Elasticsearch owns Elasticsearch configuration directory
+- name: Elasticsearch owns and can enter Elasticsearch config directory
   when: ansible_system == 'FreeBSD'
   file:
     path: "{{ elasticsearch.prefix.config }}"
     owner: elasticsearch
     group: elasticsearch
+    mode: ug+x

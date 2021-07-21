@@ -22,6 +22,12 @@
       apt:
         name: elasticsearch
 
+    - name: Restart Elasticsearch after package upgrade
+      lineinfile:
+        path: /etc/default/elasticsearch
+        regexp: '^#?RESTART_ON_UPGRADE='
+        line: RESTART_ON_UPGRADE=true
+
 - name: Enable Elasticsearch
   service:
     name: elasticsearch

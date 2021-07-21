@@ -46,10 +46,11 @@
     - "{{ elasticsearch.prefix.config }}/scripts"
   notify: Restart Elasticsearch
 
-- name: Elasticsearch owns and can enter Elasticsearch config directory
-  when: ansible_system == 'FreeBSD'
+# Elasticsearch might not start after upgrade without this permission:
+# unable to create temporary keystore at /etc/elasticsearch/elasticsearch.keystore.tmp,
+# write permissions required for [/etc/elasticsearch] or run [elasticsearch-keystore upgrade]
+- name: Allow Elasticsearch to update it's own configuration
   file:
     path: "{{ elasticsearch.prefix.config }}"
-    owner: elasticsearch
     group: elasticsearch
-    mode: ug+x
+    mode: g+rwx

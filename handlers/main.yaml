@@ -1,4 +1,5 @@
 - name: Restart Elasticsearch
+  throttle: 1
   service:
     name: elasticsearch
     state: restarted

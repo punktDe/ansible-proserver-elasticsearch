@@ -13,6 +13,12 @@ elasticsearch:
       {%- else -%}
         /usr/local/lib/elasticsearch/bin
       {%- endif -%}
+    plugins: >-
+      {%- if ansible_system == 'Linux' -%}
+        /usr/share/elasticsearch/plugins
+      {%- else -%}
+        /usr/local/lib/elasticsearch/plugins
+      {%- endif -%}
   cluster: {}
   transport_security:
     ca_from:

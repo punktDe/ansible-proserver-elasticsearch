@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -e -u -o pipefail
+
+elasticsearch_bin={{ elasticsearch.prefix.bin|quote }}
+elasticsearch_plugins={{ elasticsearch.prefix.plugins|quote }}
+elasticsearch_version="$(sudo -u elasticsearch -- "${elasticsearch_bin}/elasticsearch" --version | grep -oP '(?<=Version: )[0-9\.]+' | head -n 1)"
+
+{% if elasticsearch.http_proxy -%}
+export ES_JAVA_OPTS="-Dhttp.proxyHost={{ elasticsearch.http_proxy|urlsplit('hostname') }} -Dhttp.proxyPort={{ elasticsearch.http_proxy|urlsplit('port') }} -Dhttps.proxyHost={{ elasticsearch.http_proxy|urlsplit('hostname') }} -Dhttps.proxyPort={{ elasticsearch.http_proxy|urlsplit('port') }}"
+{% endif %}
+
+{% for plugin in elasticsearch.plugins %}
+plugin_name={{ plugin|quote }}
+plugin_elasticsearch_version="$(grep -oP '(?<=^elasticsearch.version=)[0-9\.]+' "/usr/share/elasticsearch/plugins/${plugin_name}/plugin-descriptor.properties" | tail -n 1)"
+if [ ! "$plugin_elasticsearch_version" = "$elasticsearch_version" ]; then
+    "${elasticsearch_bin}/elasticsearch-plugin" remove ingest-attachment
+    "${elasticsearch_bin}/elasticsearch-plugin" install --batch "$plugin_name"
+fi
+{% endfor %}

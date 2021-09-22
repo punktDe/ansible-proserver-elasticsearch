@@ -22,3 +22,33 @@
       shell: >
         {{ elasticsearch.prefix.bin|quote }}/elasticsearch-plugin install --batch {{ item|quote }}
       notify: Restart Elasticsearch
+
+    - when: ansible_system == 'Linux'
+      block:
+        - name: Template elasticsearch-plugin-auto-update script
+          loop:
+            - /usr/local/bin/elasticsearch-plugin-auto-update
+          template:
+            src: elasticsearch-plugin-auto-update/elasticsearch-plugin-auto-update
+            dest: "{{ item }}"
+            mode: a+x
+
+        - name: Create drop-in directory for elasticsearch.service
+          loop:
+            - /etc/systemd/system/elasticsearch.service.d
+          file:
+            path: "{{ item }}"
+            state: directory
+
+        - name: Template systemd overrides for elasticsearch-plugin-auto-update
+          loop:
+            - /etc/systemd/system/elasticsearch.service.d/elasticsearch-plugin-auto-update.conf
+          template:
+            src: elasticsearch-plugin-auto-update/elasticsearch-plugin-auto-update.conf
+            dest: "{{ item }}"
+          register: elasticsearch_plugin_auto_update_systemd_template_result
+
+        - name: Reload systemd
+          when: elasticsearch_plugin_auto_update_systemd_template_result.changed
+          systemd:
+            daemon_reload: yes

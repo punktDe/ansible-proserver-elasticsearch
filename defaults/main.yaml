@@ -57,6 +57,7 @@ elasticsearch:
       {%- else -%}
         =/var/db/elasticsearch/jna
       {%- endif -%}
+    "-Dlog4j2.formatMsgNoLookups": "=true"
   repository:
     apt:
       key_url: https://artifacts.elastic.co/GPG-KEY-elasticsearch

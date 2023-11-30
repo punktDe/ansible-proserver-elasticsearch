@@ -1,1 +1,5 @@
-{{ elasticsearch['elasticsearch.yml']|to_nice_yaml(indent=2) }}
+{% if elasticsearch.version is not defined or elasticsearch.version is version('8', '<') %}
+{{ elasticsearch['elasticsearch.yml'] | to_nice_yaml(indent=2) }}
+{% else %}
+{{ elasticsearch['elasticsearch.yml'] | ansible.utils.remove_keys(target=['system_call_filter', 'bootstrap']) | to_nice_yaml(indent=2) }}
+{% endif %}

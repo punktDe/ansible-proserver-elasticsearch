@@ -1,6 +1,10 @@
 ---
 elasticsearch:
   version: 7
+  users:
+    builtin:
+      elastic:
+        password: 
   prefix:
     config: >-
       {%- if ansible_system == 'Linux' -%}

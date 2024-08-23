@@ -1,4 +1,4 @@
-- when: ansible_distribution == 'Ubuntu'
+- when: ansible_os_family == 'Debian'
   block:
     - name: Add Elastic repository key
       apt_key:

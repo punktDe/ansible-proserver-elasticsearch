@@ -6,3 +6,5 @@
 - import_tasks: password.yaml
   when: elasticsearch.version is version('8', '>=')
 - import_tasks: plugins.yaml
+- import_tasks: reverse_proxy.yaml
+  when: elasticsearch.use_dehydrated

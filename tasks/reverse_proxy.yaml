@@ -1,0 +1,7 @@
+---
+- name: Template reverse proxy configuration
+  ansible.builtin.template:
+    src: nginx/http.d/elasticsearch.conf
+    dest: "{{ nginx.prefix.config }}/http.d/elasticsearch.conf"
+    owner: root
+    mode: "0644"

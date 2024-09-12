@@ -1,5 +1,6 @@
 ---
 - name: Template reverse proxy configuration
+  notify: Restart nginx
   ansible.builtin.template:
     src: nginx/http.d/elasticsearch.conf
     dest: "{{ nginx.prefix.config }}/http.d/elasticsearch.conf"

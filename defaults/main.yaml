@@ -1,5 +1,7 @@
 ---
 elasticsearch:
+  use_dehydrated: no
+  domain: "{{ inventory_hostname }}"
   version: 7
   users:
     builtin:

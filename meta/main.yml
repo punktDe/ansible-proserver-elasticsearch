@@ -1,5 +1,9 @@
 ---
-dependencies: []
+dependencies:
+  - role: dehydrated
+    when: elasticsearch.use_dehydrated
+  - role: nginx
+    when: elasticsearch.use_dehydrated
 
 galaxy_info:
   author: "Punkt.de"

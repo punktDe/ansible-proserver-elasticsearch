@@ -68,6 +68,6 @@ elasticsearch:
   repository:
     apt:
       key_url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-      repository: deb https://artifacts.elastic.co/packages/{{ vars.elasticsearch.version }}.x/apt
+      repository: https://artifacts.elastic.co/packages/{{ vars.elasticsearch.version }}.x/apt
   plugins: {}
   http_proxy:

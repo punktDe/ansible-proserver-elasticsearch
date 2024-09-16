@@ -1,34 +1,39 @@
-- when: ansible_os_family == 'Debian'
-  block:
-    - name: Add Elastic repository key
-      apt_key:
-        url: "{{ elasticsearch.repository.apt.key_url }}"
+---
+- name: Install python3-debian package with apt
+  ansible.builtin.apt:
+    name: python3-debian
+    update_cache: yes
 
-    - name: Add Elastic repository
-      loop:
-        - /etc/apt/sources.list.d/elastic.list
-      copy:
-        content: |
-          {{ elasticsearch.repository.apt.repository }}
-        dest: "{{ item }}"
-      register: elasticsearch_add_apt_repository
-
-    - name: Update apt cache
-      when: elasticsearch_add_apt_repository.changed
-      apt:
-        update_cache: yes
-
-    - name: Install Elasticsearch
-      apt:
-        name: elasticsearch
-
-    - name: Restart Elasticsearch after package upgrade
-      lineinfile:
-        path: /etc/default/elasticsearch
-        regexp: '^#?RESTART_ON_UPGRADE='
-        line: RESTART_ON_UPGRADE=true
-
-- name: Enable Elasticsearch
-  service:
-    name: elasticsearch
+- name: Remove the legacy apt repository
+  ansible.builtin.file:
+    dest: /etc/apt/sources.list.d/elastic.list
+    state: absent
+      
+- name: Add the elasticsearch apt repository
+  register: elasticsearch_repository_added
+  ansible.builtin.deb822_repository:
+    name: elastic
+    uris: "{{ elasticsearch.repository.apt.repository }}"
+    signed_by: "{{ elasticsearch.repository.apt.key_url }}"
+    types: [deb]
+    components: [main]
+    suites: [stable]
+    state: present
     enabled: yes
+
+- name: Update apt cache
+  when: elasticsearch_repository_added.changed
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: Restart Elasticsearch after package upgrade
+  lineinfile:
+    path: /etc/default/elasticsearch
+    regexp: '^#?RESTART_ON_UPGRADE='
+    line: RESTART_ON_UPGRADE=true
+
+- name: Install Elasticsearch
+  when: ansible_os_family == 'Debian'
+  notify: Restart Elasticsearch
+  ansible.builtin.apt:
+    name: elasticsearch

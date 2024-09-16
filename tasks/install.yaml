@@ -34,5 +34,6 @@
 
 - name: Install Elasticsearch
   when: ansible_os_family == 'Debian'
+  notify: Restart Elasticsearch
   ansible.builtin.apt:
     name: elasticsearch

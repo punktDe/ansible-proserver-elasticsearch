@@ -1,4 +1,9 @@
 ---
+- name: Enable elasticsearch service
+  service:
+    name: elasticsearch
+    enabled: yes
+
 - name: Template Elasticsearch configuration
   template:
     src: "{{ item }}"

@@ -2,7 +2,7 @@
 elasticsearch:
   use_dehydrated: no
   domain: "{{ inventory_hostname }}"
-  version: 7
+  version: 8
   users:
     builtin:
       elastic:
@@ -68,6 +68,6 @@ elasticsearch:
   repository:
     apt:
       key_url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-      repository: deb https://artifacts.elastic.co/packages/{{ vars.elasticsearch.version }}.x/apt stable main
+      repository: deb https://artifacts.elastic.co/packages/{{ vars.elasticsearch.version }}.x/apt
   plugins: {}
   http_proxy:

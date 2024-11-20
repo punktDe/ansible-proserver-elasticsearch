@@ -1,5 +1,6 @@
 ---
 - import_tasks: install.yaml
+  when: ansible_os_family == "Debian"
 - import_tasks: transport_security.yaml
 - import_tasks: config.yaml
 - import_tasks: service.yaml

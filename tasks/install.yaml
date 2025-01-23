@@ -29,6 +29,7 @@
 - name: Restart Elasticsearch after package upgrade
   lineinfile:
     path: /etc/default/elasticsearch
+    create: yes
     regexp: '^#?RESTART_ON_UPGRADE='
     line: RESTART_ON_UPGRADE=true
 

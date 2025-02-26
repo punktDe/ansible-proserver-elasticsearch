@@ -3,4 +3,3 @@
   service:
     name: elasticsearch
     state: restarted
-  when: not elasticsearch_service_start_result.changed

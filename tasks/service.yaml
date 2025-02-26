@@ -1,5 +1,5 @@
-- name: Start Elasticsearch
+- name: Start/restart Elasticsearch
   service:
     name: elasticsearch
-    state: started
+    state: restarted
   register: elasticsearch_service_start_result

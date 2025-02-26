@@ -6,7 +6,7 @@ elasticsearch:
   users:
     builtin:
       elastic:
-        password: 
+        password:
   prefix:
     config: >-
       {%- if ansible_system == 'Linux' -%}
@@ -54,6 +54,8 @@ elasticsearch:
         {%- endif -%}
       logs: /var/log/elasticsearch
     xpack:
+      security.transport.ssl.enabled: false
+      security.http.ssl.enabled: false
       ml:
         enabled: "{{ ansible_system == 'Linux' }}"
   log4j2.properties: {}

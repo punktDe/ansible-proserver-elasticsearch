@@ -5,6 +5,7 @@
     enabled: yes
 
 - name: Template Elasticsearch configuration
+  register: es_configuration
   template:
     src: "{{ item }}"
     dest: "{{ render_path }}"
@@ -18,6 +19,7 @@
   notify: Restart Elasticsearch
 
 - name: Configure Elasticsearch (log4j2.properties)
+  register: log4j2_configuration
   lineinfile:
     path: "{{ config_filepath }}"
     regexp: "^{{ item.key|regex_escape }}[\\s\\t]*="
@@ -31,6 +33,7 @@
   notify: Restart Elasticsearch
 
 - name: Configure Elasticsearch (jvm.options)
+  register: jvm_configuration
   lineinfile:
     path: "{{ config_filepath }}"
     regexp: "^{{ item.key|regex_escape }}"
@@ -54,8 +57,14 @@
 # Elasticsearch might not start after upgrade without this permission:
 # unable to create temporary keystore at /etc/elasticsearch/elasticsearch.keystore.tmp,
 # write permissions required for [/etc/elasticsearch] or run [elasticsearch-keystore upgrade]
-- name: Allow Elasticsearch to update it's own configuration
+- name: Allow Elasticsearch to update its own configuration
   file:
     path: "{{ elasticsearch.prefix.config }}"
     group: elasticsearch
     mode: g+rwx
+
+- name: Restart ElasticSearch on configuration change
+  when: jvm_configuration.changed or es_configuration.changed or log4j2_configuration.changed
+  ansible.builtin.service:
+    name: elasticsearch
+    state: restarted

@@ -1,14 +1,18 @@
 ---
+- name: Set ES command environment fact
+  ansible.builtin.set_fact:
+    es_env:
+      ES_HOME: "{{ elasticsearch.prefix.bin | regex_replace('/bin', '') }}"
+      ES_PATH_CONF: "{{ elasticsearch.prefix.config }}"
+      ES_SD_NOTIFY: true
+
 - name: Generate and read the CA for transport security
   when: elasticsearch.transport_security.ca_from == inventory_hostname
   any_errors_fatal: yes
   block:
     - name: Generate CA for Elasticsearch transport security
       register: ca_generate
-      environment:
-        ES_HOME: '{{ elasticsearch.prefix.bin | regex_replace("/bin", "") }}'
-        ES_PATH_CONF: "{{ elasticsearch.prefix.config }}"
-        ES_SD_NOTIFY: "true"
+      environment: "{{ es_env }}"
       ansible.builtin.command:
         cmd: >-
           {{ elasticsearch.prefix.bin }}/elasticsearch-certutil ca --out {{ elasticsearch.prefix.config }}/ca.p12 --pass ""
@@ -37,10 +41,7 @@
 
 - name: Generate certificate for Elasticsearch transport security
   register: certificates_generate
-  environment:
-    ES_HOME: '{{ elasticsearch.prefix.bin | regex_replace("/bin", "") }}'
-    ES_PATH_CONF: "{{ elasticsearch.prefix.config }}"
-    ES_SD_NOTIFY: "true"
+  environment: "{{ es_env }}"
   ansible.builtin.command:
     creates: "{{ elasticsearch.prefix.config }}/cert.p12"
     cmd: >-
@@ -65,10 +66,7 @@
   check_mode: no
   register: es_keystore_password
   failed_when: es_keystore_password.failed and "does not exist" not in es_keystore_password.stderr
-  environment:
-    ES_HOME: '{{ elasticsearch.prefix.bin | regex_replace("/bin", "") }}'
-    ES_PATH_CONF: "{{ elasticsearch.prefix.config }}"
-    ES_SD_NOTIFY: "true"
+  environment: "{{ es_env }}"
   ansible.builtin.command:
     cmd: >-
       {{ elasticsearch.prefix.bin }}/elasticsearch-keystore show xpack.security.transport.ssl.keystore.secure_password
@@ -79,10 +77,7 @@
   when:
     - elasticsearch['elasticsearch.yml'].xpack.security.transport.ssl.keystore.secure_password == ""
     - '"does not exist" not in es_keystore_password.stderr'
-  environment:
-    ES_HOME: '{{ elasticsearch.prefix.bin | regex_replace("/bin", "") }}'
-    ES_PATH_CONF: "{{ elasticsearch.prefix.config }}"
-    ES_SD_NOTIFY: "true"
+  environment: "{{ es_env }}"
   ansible.builtin.command:
     cmd: >-
       {{ elasticsearch.prefix.bin }}/elasticsearch-keystore remove xpack.security.transport.ssl.keystore.secure_password
@@ -96,7 +91,7 @@
   ansible.builtin.shell:
     cmd: >-
       echo {{ elasticsearch['elasticsearch.yml'].xpack.security.transport.ssl.keystore.secure_password }} |
-      ES_HOME={{ elasticsearch.prefix.bin | regex_replace("/bin", "") }}
-      ES_PATH_CONF={{ elasticsearch.prefix.config }}
-      ES_SD_NOTIFY=true
+      {% for key, value in es_env.items() %}
+      {{ key }}={{ value | quote }}
+      {% endfor %}
       {{ elasticsearch.prefix.bin }}/elasticsearch-keystore add -f --stdin xpack.security.transport.ssl.keystore.secure_password

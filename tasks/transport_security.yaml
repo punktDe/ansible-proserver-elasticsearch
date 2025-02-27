@@ -1,11 +1,4 @@
 ---
-- name: Set ES command environment fact
-  ansible.builtin.set_fact:
-    es_env:
-      ES_HOME: "{{ elasticsearch.prefix.bin | regex_replace('/bin', '') }}"
-      ES_PATH_CONF: "{{ elasticsearch.prefix.config }}"
-      ES_SD_NOTIFY: true
-
 - name: Generate and read the CA for transport security
   when: elasticsearch.transport_security.ca_from == inventory_hostname
   any_errors_fatal: yes

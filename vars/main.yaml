@@ -1,0 +1,5 @@
+---
+es_env:
+  ES_HOME: "{{ elasticsearch.prefix.bin | regex_replace('/bin', '') }}"
+  ES_PATH_CONF: "{{ elasticsearch.prefix.config }}"
+  ES_SD_NOTIFY: true

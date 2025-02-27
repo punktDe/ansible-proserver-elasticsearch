@@ -34,7 +34,6 @@
       --ip {{ elasticsearch.transport_security.cert_ips | join(',') | quote }}
       --pass ""
       --out {{ elasticsearch.prefix.config }}/cert.p12
-      chmod g+r {{ elasticsearch.prefix.config }}/cert.p12
   notify: Restart Elasticsearch
 
 - name: Make sure the ES certificate has the correct permissions

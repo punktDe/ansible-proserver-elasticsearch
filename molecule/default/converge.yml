@@ -6,6 +6,8 @@
     ANSIBLE_HASH_BEHAVIOUR: merge
   vars:
     elasticsearch:
+      transport_security:
+        ca_from: "{{ inventory_hostname }}"
       users:
         builtin:
           elastic:

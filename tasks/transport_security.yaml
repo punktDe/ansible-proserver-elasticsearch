@@ -4,9 +4,14 @@
   any_errors_fatal: yes
   block:
     - name: Generate CA for Elasticsearch transport security
+      register: ca_generate
+      environment:
+        ES_HOME: '{{ elasticsearch.prefix.bin | regex_replace("/bin", "") }}'
+        ES_PATH_CONF: "{{ elasticsearch.prefix.config }}"
+        ES_SD_NOTIFY: "true"
       ansible.builtin.command:
         cmd: >-
-          {{ elasticsearch.prefix.bin | quote }}/elasticsearch-certutil ca --out {{ elasticsearch.prefix.config + '/ca.p12' | quote }} --pass ""
+          {{ elasticsearch.prefix.bin }}/elasticsearch-certutil ca --out {{ elasticsearch.prefix.config }}/ca.p12 --pass ""
         creates: "{{ elasticsearch.prefix.config }}/ca.p12"
 
     - name: Read CA for Elasticsearch transport security
@@ -17,13 +22,25 @@
 - name: Write CA for Elasticsearch transport security
   when: elasticsearch.transport_security.ca_from != inventory_hostname
   ansible.builtin.copy:
-    content: "{{ hostvars[elasticsearch.transport_security.ca_from].elasticsearch_read_ca_result.results.content | b64decode }}"
+    content: "{{ hostvars[elasticsearch.transport_security.ca_from].elasticsearch_read_ca_result.content | b64decode }}"
     dest: "{{ elasticsearch.prefix.config }}/ca.p12"
     owner: root
     group: elasticsearch
-    mode: "0640"
+    mode: "0644"
+
+- name: Ensure CA is readable by Elasticsearch
+  ansible.builtin.file:
+    path: "{{ elasticsearch.prefix.config }}/ca.p12"
+    owner: root
+    group: elasticsearch
+    mode: "0644"
 
 - name: Generate certificate for Elasticsearch transport security
+  register: certificates_generate
+  environment:
+    ES_HOME: '{{ elasticsearch.prefix.bin | regex_replace("/bin", "") }}'
+    ES_PATH_CONF: "{{ elasticsearch.prefix.config }}"
+    ES_SD_NOTIFY: "true"
   ansible.builtin.command:
     creates: "{{ elasticsearch.prefix.config }}/cert.p12"
     cmd: >-
@@ -32,7 +49,7 @@
       --ca-pass ""
       --dns {{ elasticsearch.transport_security.cert_dns | join(',') | quote }}
       --ip {{ elasticsearch.transport_security.cert_ips | join(',') | quote }}
-      --pass ""
+      --pass {{ elasticsearch["elasticsearch.yml"].xpack.security.transport.ssl.keystore.secure_password | quote }}
       --out {{ elasticsearch.prefix.config }}/cert.p12
   notify: Restart Elasticsearch
 
@@ -41,4 +58,30 @@
     owner: root
     group: elasticsearch
     path: "{{ elasticsearch.prefix.config }}/cert.p12"
-    mode: "0640"
+    mode: "0644"
+
+- name: Get current keystore password
+  changed_when: no
+  register: es_keystore_password
+  environment:
+    ES_HOME: '{{ elasticsearch.prefix.bin | regex_replace("/bin", "") }}'
+    ES_PATH_CONF: "{{ elasticsearch.prefix.config }}"
+    ES_SD_NOTIFY: "true"
+  ansible.builtin.command:
+    cmd: >-
+      {{ elasticsearch.prefix.bin }}/elasticsearch-keystore show xpack.security.transport.ssl.keystore.secure_password
+
+- name: Set new keystore password
+  changed_when: yes
+  when: es_keystore_password.stdout != elasticsearch['elasticsearch.yml'].xpack.security.transport.ssl.keystore.secure_password
+  register: es_new_keystore_password
+  environment:
+    ES_HOME: '{{ elasticsearch.prefix.bin | regex_replace("/bin", "") }}'
+    ES_PATH_CONF: "{{ elasticsearch.prefix.config }}"
+    ES_SD_NOTIFY: "true"
+  ansible.builtin.shell: >-
+    echo {{ elasticsearch['elasticsearch.yml'].xpack.security.transport.ssl.keystore.secure_password }} |
+    ES_HOME={{ elasticsearch.prefix.bin | regex_replace("/bin", "") }}
+    ES_PATH_CONF={{ elasticsearch.prefix.config }}
+    ES_SD_NOTIFY=true
+    {{ elasticsearch.prefix.bin }}/elasticsearch-keystore add -f --stdin xpack.security.transport.ssl.keystore.secure_password

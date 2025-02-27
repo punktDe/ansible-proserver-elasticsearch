@@ -11,10 +11,9 @@
   tasks:
     - name: Make sure that the cluster is green
       ansible.builtin.uri:
-        url: http://localhost:9200/cluster/_health
-        return_content: true
+        url: http://localhost:9200/_cluster/health
         user: elastic
         password: "{{ elasticsearch.users.builtin.elastic.password }}"
         force_basic_auth: yes
       register: this
-      failed_when: this is failed or (this.content | from_json).status != "green"
+      failed_when: this is failed or this.json.status != "green"

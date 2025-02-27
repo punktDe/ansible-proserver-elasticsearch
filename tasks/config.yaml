@@ -59,9 +59,3 @@
     state: directory
     group: elasticsearch
     mode: g+rwx
-
-- name: Restart ElasticSearch on configuration change
-  when: jvm_configuration.changed or es_configuration.changed or log4j2_configuration.changed
-  ansible.builtin.service:
-    name: elasticsearch
-    state: restarted

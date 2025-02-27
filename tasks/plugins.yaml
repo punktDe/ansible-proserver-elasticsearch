@@ -22,7 +22,7 @@
       -Dhttps.proxyHost={{ elasticsearch.http_proxy | urlsplit('hostname') }}
       -Dhttps.proxyPort={{ elasticsearch.http_proxy | urlsplit('port') }}
       {% endif %}
-  ansible.builtin.comand:
+  ansible.builtin.command:
     cmd: "{{ elasticsearch.prefix.bin | quote }}/elasticsearch-plugin install --batch {{ item | quote }}"
 
 - name: Configure systemd service and helper scripts (Linux)

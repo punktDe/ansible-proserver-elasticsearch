@@ -3,15 +3,18 @@
   when: ansible_os_family == "Debian"
   ansible.builtin.include_tasks: install.yaml
 
-- name: Generate certificates for transport security
-  when: elasticsearch.transport_security.ca_from
-  ansible.builtin.include_tasks: transport_security.yaml
+- name: Start the Elasticsearch service
+  ansible.builtin.include_tasks: service.yaml
 
 - name: Configure Elasticsearch
   ansible.builtin.include_tasks: config.yaml
 
-- name: Start the Elasticsearch service
-  ansible.builtin.include_tasks: service.yaml
+- name: Generate certificates for transport security
+  when: elasticsearch.transport_security.ca_from
+  ansible.builtin.include_tasks: transport_security.yaml
+
+- name: Restart Elasticsearch on config changes
+  ansible.builtin.include_tasks: restart_elasticsearch.yaml
 
 - name: Set password for elastic superuser (ES 8 or newer)
   when: elasticsearch.version is version('8', '>=')

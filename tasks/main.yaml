@@ -1,11 +1,26 @@
 ---
-- import_tasks: install.yaml
+- name: Install Elasticsearch (Debian-based)
   when: ansible_os_family == "Debian"
-- import_tasks: transport_security.yaml
-- import_tasks: config.yaml
-- import_tasks: service.yaml
-- import_tasks: password.yaml
+  ansible.builtin.include_tasks: install.yaml
+
+- name: Generate certificates for transport security
+  when: elasticsearch.transport_security.ca_from
+  ansible.builtin.include_tasks: transport_security.yaml
+
+- name: Configure Elasticsearch
+  ansible.builtin.include_tasks: config.yaml
+
+- name: Start the Elasticsearch service
+  ansible.builtin.include_tasks: service.yaml
+
+- name: Set password for elastic superuser (ES 8 or newer)
   when: elasticsearch.version is version('8', '>=')
-- import_tasks: plugins.yaml
-- import_tasks: reverse_proxy.yaml
+  ansible.builtin.include_tasks: password.yaml
+
+- name: Configure ElasticSearch plugins
+  ansible.builtin.include_tasks: plugins.yaml
+  when: elasticsearch.plugins
+
+- name: Set up a reverse proxy for Elasticsearch
   when: elasticsearch.use_dehydrated
+  ansible.builtin.include_tasks: reverse_proxy.yaml

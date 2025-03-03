@@ -1,0 +1,42 @@
+---
+name: Generate README.md for the role
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  readme:
+    name: Generate README.md from argument specs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Install dependencies
+        run: |
+          uv -q venv --allow-existing --seed .venv
+          . .venv/bin/activate
+          uv -q pip install -r requirements.txt
+
+      - name: Run aar-doc
+        run: |
+          . .venv/bin/activate
+          aar-doc --config-file .aar-doc.yml . markdown
+
+      - name: Output diff
+        run: git diff README.md
+
+      - name: Push README
+        uses: github-actions-x/commit
+        with:
+          github-token: ${{ secrets.COMMIT_TOKEN }}
+          commit-message: '[skip ci] Update README.md'
+          files: README.md
+          rebase: true

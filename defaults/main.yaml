@@ -26,7 +26,6 @@ elasticsearch:
       {%- else -%}
         /usr/local/lib/elasticsearch/plugins
       {%- endif -%}
-  cluster: {}
   transport_security:
     ca_from:
     cert_dns: "{{ [inventory_hostname] + [ansible_nodename] }}"

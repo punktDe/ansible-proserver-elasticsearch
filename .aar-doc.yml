@@ -1,0 +1,85 @@
+---
+output_template: |
+  <!-- BEGIN_ANSIBLE_DOCS -->
+  # {{ role }}
+
+  {{ metadata.galaxy_info.description }}
+
+  ## Supported Operating Systems
+
+  {%- for platform in metadata.platforms %}
+  - {{ platform.name }}{{ " " + (platform.versions | join(', ')) if platform.versions }}
+  {%- endfor %}
+
+  ## Role Arguments
+
+  {% for entrypoint in argument_specs.keys() %}
+
+  {% if entrypoint_options[entrypoint] | length > 1 -%}
+  {% for path, options in entrypoint_options[entrypoint][1:] -%}
+  #### Options for `{{ path | reject('eq', 'main') | join(".") }}`
+
+  |Option|Description|Type|Required|Default|
+  |---|---|---|---|---|
+  {%- for name, details in options.items() %}
+  | `{{ name }}` | {{ details.display_description }} | {{ details.display_type }} | {{ details.display_required }} | {{ details.display_default }} |
+  {%- endfor %}
+
+  {% endfor -%}
+
+  {% endif -%}
+
+  {% if entrypoint in entrypoint_choices -%}
+  {% for path, choices in entrypoint_choices[entrypoint] -%}
+  #### Choices for {{ path | join(" > ") }}
+
+  |Choice|
+  |---|
+  {%- for item in choices %}
+  | {{ item }} |
+  {%- endfor %}
+
+  {% endfor -%}
+  {% endif -%}
+  {% else -%}
+
+  This entrypoint has no options.
+
+  {% endfor -%}
+
+  ## Dependencies
+
+  {%- if ("dependencies" in metadata) and (metadata.dependencies | length > 0) %}
+  {%- for dependency in metadata.dependencies %}
+  {%- if dependency.src %}
+  - [{{ dependency.role }}]({{ dependency.src }})
+  {%- else %}
+  - {{ dependency.role }}
+  {%- endif %}
+    {%- if dependency.when %}
+    - **Condition**: `{{ dependency.when }}`
+    {%- endif %}
+  {%- endfor %}
+  {%- else %}
+  None.
+  {%- endif %}
+
+  ## Installation
+  Add this role to the requirements.yml of your playbook as follows:
+  ```yaml
+  roles:
+    - name: {{ role }}
+      src: {{ metadata.repository }}
+  ```
+
+  Afterwards, install the role by running `ansible-galaxy install -r requirements.yml`
+
+  ## Example Playbook
+
+  ```yaml
+  - hosts: all
+    roles:
+      - name: {{ metadata.galaxy_info.role_name }}
+  ```
+
+  <!-- END_ANSIBLE_DOCS -->

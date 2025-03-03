@@ -1,0 +1,28 @@
+---
+- name: Restart Elasticsearch on configuration change
+  block:
+    - name: Restart Elasticsearch
+      when: jvm_configuration.changed or es_configuration.changed or log4j2_configuration.changed or ca_generate.changed or certificates_generate.changed or es_new_keystore_password.changed
+      ansible.builtin.service:
+        name: elasticsearch
+        state: restarted
+
+  rescue:
+    - name: Fetch ES configuration
+      register: es_config
+      ansible.builtin.slurp:
+        path: "{{ elasticsearch.prefix.config }}/elasticsearch.yml"
+
+    - name: Display ES configuration
+      ansible.builtin.debug:
+        msg: "{{ es_config.content | b64decode }}"
+
+    - name: Get the Elasticsearch error log
+      register: es_error_log
+      changed_when: no
+      ansible.builtin.command:
+        cmd: 'tail -n 50 {{ elasticsearch["elasticsearch.yml"].path.logs }}/{{ inventory_hostname }}.log'
+
+    - name: Display the Elasticsearch error log
+      ansible.builtin.fail:
+        msg: "{{ es_error_log.stdout }}"

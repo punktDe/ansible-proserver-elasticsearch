@@ -8,7 +8,7 @@
   ansible.builtin.file:
     dest: /etc/apt/sources.list.d/elastic.list
     state: absent
-      
+
 - name: Add the elasticsearch apt repository
   register: elasticsearch_repository_added
   ansible.builtin.deb822_repository:
@@ -26,12 +26,14 @@
   ansible.builtin.apt:
     update_cache: yes
 
-- name: Restart Elasticsearch after package upgrade
-  lineinfile:
+- name: Ensure Elasticsearch is restarted after package upgrade
+  ansible.builtin.lineinfile:
     path: /etc/default/elasticsearch
     create: yes
     regexp: '^#?RESTART_ON_UPGRADE='
     line: RESTART_ON_UPGRADE=true
+    owner: root
+    mode: "0644"
 
 - name: Install Elasticsearch
   when: ansible_os_family == 'Debian'

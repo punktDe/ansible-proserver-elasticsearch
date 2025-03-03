@@ -1,0 +1,18 @@
+---
+- name: Converge
+  hosts: all
+  environment:
+    GITHUB_ACTIONS: "maybe"
+    ANSIBLE_HASH_BEHAVIOUR: merge
+  vars:
+    elasticsearch:
+      transport_security:
+        ca_from: "{{ inventory_hostname }}"
+      users:
+        builtin:
+          elastic:
+            password: supersecretpassword
+  tasks:
+    - name: "Include ansible-proserver-elasticsearch"
+      ansible.builtin.include_role:
+        name: "ansible-proserver-elasticsearch"

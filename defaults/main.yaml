@@ -54,8 +54,26 @@ elasticsearch:
         {%- endif -%}
       logs: /var/log/elasticsearch
     xpack:
-      security.transport.ssl.enabled: false
-      security.http.ssl.enabled: false
+      security:
+        transport:
+          ssl:
+            enabled: "{{ vars.elasticsearch.transport_security.ca_from is defined }}"
+            keystore:
+              secure_password: >-
+                {{ "" if vars.elasticsearch.transport_security.ca_from is defined else omit }}
+              path: >-
+                {%- if vars.elasticsearch.transport_security.ca_from is defined -%}
+                {%- if ansible_system == 'Linux' -%}
+                  /etc/elasticsearch/cert.p12
+                {%- else -%}
+                  /usr/local/etc/elasticsearch/cert.p12
+                {%- endif -%}
+                {%- else -%}
+                  omit
+                {%- endif -%}
+        http:
+          ssl:
+            enabled: false
       ml:
         enabled: "{{ ansible_system == 'Linux' }}"
   log4j2.properties: {}

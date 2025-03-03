@@ -1,5 +1,6 @@
+---
 - name: Start Elasticsearch
-  service:
+  ansible.builtin.service:
     name: elasticsearch
     state: started
   register: elasticsearch_service_start_result

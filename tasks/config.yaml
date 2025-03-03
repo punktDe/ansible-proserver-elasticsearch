@@ -1,28 +1,24 @@
 ---
 - name: Enable elasticsearch service
-  service:
+  ansible.builtin.service:
     name: elasticsearch
     enabled: yes
 
 - name: Template Elasticsearch configuration
   register: es_configuration
-  template:
-    src: "{{ item }}"
-    dest: "{{ render_path }}"
-  loop_control:
-    label: "{{ render_path }}"
-  vars:
-    template_dir: "{{ role_path }}/templates"
-    render_path: "{{ elasticsearch.prefix.config }}/{{ item|elasticsearch_strip_prefix(template_dir + '/elasticsearch/')|elasticsearch_strip_suffix('.j2') }}"
-  with_fileglob:
-    - "{{ role_path }}/templates/elasticsearch/*.j2"
+  ansible.builtin.template:
+    src: "elasticsearch/elasticsearch.yml.j2"
+    dest: "{{ elasticsearch.prefix.config }}/elasticsearch.yml"
+    owner: root
+    group: elasticsearch
+    mode: "0664"
   notify: Restart Elasticsearch
 
 - name: Configure Elasticsearch (log4j2.properties)
   register: log4j2_configuration
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "{{ config_filepath }}"
-    regexp: "^{{ item.key|regex_escape }}[\\s\\t]*="
+    regexp: "^{{ item.key | regex_escape }}[\\s\\t]*="
     line: "{{ item.key }} = {{ item.value }}"
     state: "{{ 'present' if item.value is not none else 'absent' }}"
   loop_control:
@@ -34,9 +30,9 @@
 
 - name: Configure Elasticsearch (jvm.options)
   register: jvm_configuration
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "{{ config_filepath }}"
-    regexp: "^{{ item.key|regex_escape }}"
+    regexp: "^{{ item.key | regex_escape }}"
     line: "{{ item.key }}{{ item.value }}"
     state: "{{ 'present' if item.value is not none else 'absent' }}"
   loop_control:
@@ -47,24 +43,19 @@
   notify: Restart Elasticsearch
 
 - name: Create directory for Elasticsearch scripts
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
+    owner: root
+    group: elasticsearch
+    mode: "0775"
     state: directory
   with_items:
     - "{{ elasticsearch.prefix.config }}/scripts"
   notify: Restart Elasticsearch
 
-# Elasticsearch might not start after upgrade without this permission:
-# unable to create temporary keystore at /etc/elasticsearch/elasticsearch.keystore.tmp,
-# write permissions required for [/etc/elasticsearch] or run [elasticsearch-keystore upgrade]
 - name: Allow Elasticsearch to update its own configuration
-  file:
+  ansible.builtin.file:
     path: "{{ elasticsearch.prefix.config }}"
+    state: directory
     group: elasticsearch
     mode: g+rwx
-
-- name: Restart ElasticSearch on configuration change
-  when: jvm_configuration.changed or es_configuration.changed or log4j2_configuration.changed
-  ansible.builtin.service:
-    name: elasticsearch
-    state: restarted

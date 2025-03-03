@@ -1,5 +1,6 @@
+---
 - name: Restart Elasticsearch
   throttle: 1
-  service:
+  ansible.builtin.service:
     name: elasticsearch
     state: restarted

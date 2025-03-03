@@ -34,7 +34,7 @@ jobs:
         run: git diff README.md
 
       - name: Push README
-        uses: github-actions-x/commit
+        uses: github-actions-x/commit@v2.9
         with:
           github-token: ${{ secrets.COMMIT_TOKEN }}
           commit-message: '[skip ci] Update README.md'

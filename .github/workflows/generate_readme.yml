@@ -5,6 +5,9 @@ on:
   push:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   readme:
     name: Generate README.md from argument specs
@@ -33,10 +36,10 @@ jobs:
       - name: Output diff
         run: git diff README.md
 
-      - name: Push README
-        uses: github-actions-x/commit@v2.9
-        with:
-          github-token: ${{ secrets.COMMIT_TOKEN }}
-          commit-message: '[skip ci] Update README.md'
-          files: README.md
-          rebase: true
+      - name: Commit and push README
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add README.md
+          git commit -m "chore: Generate README.md"
+          git push

@@ -11,7 +11,7 @@ argument_specs:
             type: "bool"
             default: false
             description:
-              - Whether to configure a SSL certificate and a reverse proxy for Elasticsearch.
+              - Whether to configure an SSL certificate and a reverse proxy for Elasticsearch.
               - If set to `true`, will use ansible-proserver-nginx and ansible-proserver-dehydrated
                 to set up an Nginx-based reverse proxy with a valid SSL certificate that listens on
                 0.0.0.0:443.

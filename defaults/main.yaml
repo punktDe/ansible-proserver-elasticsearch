@@ -56,7 +56,7 @@ elasticsearch:
       security:
         transport:
           ssl:
-            enabled: "{{ vars.elasticsearch.transport_security.ca_from is defined }}"
+            enabled: "{{ vars.elasticsearch.transport_security.ca_from | length > 0 }}"
             keystore:
               secure_password: >-
                 {{ "" if vars.elasticsearch.transport_security.ca_from is defined else omit }}

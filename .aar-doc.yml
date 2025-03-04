@@ -1,4 +1,6 @@
 ---
+output_file: README.md
+output_mode: replace
 output_template: |
   <!-- BEGIN_ANSIBLE_DOCS -->
   # {{ role }}
@@ -7,9 +9,9 @@ output_template: |
 
   ## Supported Operating Systems
 
-  {%- for platform in metadata.platforms %}
-  - {{ platform.name }}{{ " " + (platform.versions | join(', ')) if platform.versions }}
-  {%- endfor %}
+  - Debian 12
+  - Ubuntu 24.04, 22.04
+  - FreeBSD [Proserver](https://infrastructure.punkt.de/de/produkte/proserver.html)
 
   ## Role Arguments
 
@@ -69,7 +71,7 @@ output_template: |
   ```yaml
   roles:
     - name: {{ role }}
-      src: {{ metadata.repository }}
+      src: https://github.com/punktDe/ansible-proserver-elasticsearch
   ```
 
   Afterwards, install the role by running `ansible-galaxy install -r requirements.yml`
@@ -79,7 +81,7 @@ output_template: |
   ```yaml
   - hosts: all
     roles:
-      - name: {{ metadata.galaxy_info.role_name }}
+      - name: elasticsearch
   ```
 
   <!-- END_ANSIBLE_DOCS -->

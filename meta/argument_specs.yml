@@ -1,0 +1,148 @@
+---
+argument_specs:
+  main:
+    short_description: Main entry point for the Elasticsearch role
+    options:
+      elasticsearch:
+        type: "dict"
+        required: true
+        options:
+          use_dehydrated:
+            type: "bool"
+            default: false
+            description:
+              - Whether to configure a SSL certificate and a reverse proxy for Elasticsearch.
+              - If set to `true`, will use ansible-proserver-nginx and ansible-proserver-dehydrated
+                to set up an Nginx-based reverse proxy with a valid SSL certificate that listens on
+                0.0.0.0:443.
+              - By default, HTTPS-01 challenge will be used to create the SSL certificate.
+                In order for this to work, `elasticsearch.domain` has to be set to a valid, DNS-resolveable
+                FQDN (defaults to `inventory_hostname`).
+              - Please consult the documentation of
+                [ansible-proserver-dehydrated](https://github.com/punktDe/ansible-proserver-dehydrated)
+                for other available challenges
+          domain:
+            type: "str"
+            default: "{{ inventory_hostname }}"
+            description:
+              - A domain that will be used for the Elasticsearch cluster name as well as reverse proxy
+                (the latter only applies when `elasticsearch.use_dehydrated` is set)
+          version:
+            type: "int"
+            default: 8
+            description:
+              - The major version of Elasticsearch to be configured/installed.
+              - If set to >=8, will require setting the password for the `elastic` superuser
+                (`elasticsearch.users.builtin.elastic.password), since security is enabled
+                by default starting with Elasticsearch 8.x
+          users:
+            type: "dict"
+            required: true
+            description:
+              - Allows for setting passwords for Elasticsearch users
+              - As of now, only supports setting the password for the `elastic` user
+                (`elasticsearch.users.builtin.elastic.password`)
+          prefix:
+            type: "dict"
+            required: true
+            description:
+              - Sets folders/prefixes for Elasticsearch directories
+            options:
+              config:
+                type: "str"
+                required: true
+                description:
+                  - Path for configuration files (e.g. elasticsearch.yml)
+                  - Defaults to /etc/elasticsearch on Linux and /usr/local/etc/elasticsearch on other systems
+              bin:
+                type: "str"
+                required: true
+                description:
+                  - Path for Elasticsearch binaries (e.g. elasticsearch-keystore)
+                  - Defaults to /usr/share/elasticsearch/bin on Linux and /usr/local/lib/elasticsearch/bin on other systems
+              plugins:
+                type: "str"
+                required: true
+                description:
+                  - Path for installing Elasticsearch plugins
+                  - Defaults to /usr/share/elasticsearch/plugins on Linux and /usr/local/lib/elasticsearch/plugins on other systems
+          transport_security:
+            type: "dict"
+            required: true
+            description: "Settings for transport security (disabled by default)"
+            options:
+              ca_from:
+                type: "str"
+                required: false
+                description:
+                  - The inventory hostname of the machine which should generate the CA
+                    for transport security.
+                  - Setting this variable activates transport security
+                  - The resulting CA will then be copied to all the other inventory members
+                    which satisfy the following requirements
+                  - \* ansible-proserver-elasticsearch role is executed on the machine
+                  - \* The machine has the `elasticsearch.transport_security.ca_from variable set
+                    which is not equal to the machine's `inventory_hostname`
+                  - The certificates will be generated on every machine in the cluster individually
+                    using this CA.
+              cert_dns:
+                type: "list"
+                default: "{{ [inventory_hostname] + [ansible_nodename] }}"
+                elements: "str"
+                description:
+                  - Domain names for which the transport security certificate will be generated
+                  - Includes inventory_hostname and ansible_nodename of the current node by default
+              cert_ips:
+                type: "list"
+                elements: "str"
+                default: "{{ ansible_all_ipv4_addresses + ansible_all_ipv6_addresses }}"
+                description:
+                  - IP addresses for which the transport security certificate will be generated
+                  - Includes all of the machine's IPv4 and IPv6 addresses by default
+          elasticsearch.yml:
+            type: "dict"
+            required: true
+            description:
+              - Allows to define options included in the elasticsearch.yml file
+              - Consult defaults/main.yml for options set by default,
+                and https://www.elastic.co/guide/en/elasticsearch/reference/current/settings.html
+                for a guide on how to configure Elasticsearch
+          log4j2.properties:
+            type: "dict"
+            default: {}
+            description:
+              - Allows to define options included in the log4j2.properties file
+          jvm.options:
+            type: "dict"
+            required: true
+            description:
+              - Allows to define options included in the log4j2.properties file
+              - Consult defaults/main.yml for options set by default
+          repository:
+            type: "dict"
+            required: true
+            options:
+              apt:
+                type: "dict"
+                required: true
+                description:
+                  - Configuration options for APT repository used to install Elasticsearch
+                    (only applies for Debian-based systems)
+                options:
+                  key_url:
+                    type: "str"
+                    default: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+                  repository:
+                    type: "str"
+                    default: "https://artifacts.elastic.co/packages/{{ vars.elasticsearch.version }}.x/apt"
+          plugins:
+            type: "dict"
+            required: false
+            description:
+              - Will install the specified plugins using the `elasticsearch-plugin install` command
+          http_proxy:
+            type: "str"
+            required: false
+            description:
+              - Specifies HTTP proxy to be used for Elasticsearch commands
+                that require Internet access (e.g. elasticsearch-plugin)

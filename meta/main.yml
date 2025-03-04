@@ -1,14 +1,17 @@
 ---
 dependencies:
   - role: dehydrated
+    src: "https://github.com/punktDe/ansible-proserver-dehydrated"
     when: elasticsearch.use_dehydrated
   - role: nginx
+    src: "https://github.com/punktDe/ansible-proserver-nginx"
     when: elasticsearch.use_dehydrated
 
 galaxy_info:
-  author: "Punkt.de"
+  author: "punkt.de"
   license: "MIT"
   description: "Elasticsearch role for Proserver"
-  role_name: "proserver_elasticsearch"
+  role_name: "elasticsearch"
   namespace: "punktde"
   min_ansible_version: "2.15"
+  platforms: []

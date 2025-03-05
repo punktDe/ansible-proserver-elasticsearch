@@ -9,10 +9,6 @@
           elastic:
             password: supersecretpassword
   tasks:
-    - name: Show the elasticsearch configuration
-      ansible.builtin.debug:
-        msg: "{{ elasticsearch['elasticsearch.yml'] }}"
-
     - name: Make sure that the cluster is green
       ansible.builtin.uri:
         url: http://localhost:9200/_cluster/health

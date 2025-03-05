@@ -59,9 +59,9 @@ elasticsearch:
             enabled: "{{ true if vars.elasticsearch.transport_security.ca_from else false }}"
             keystore:
               secure_password: >-
-                {{ "" if vars.elasticsearch.transport_security.ca_from is defined else omit }}
+                {{ "" if vars.elasticsearch.transport_security.ca_from else omit }}
               path: >-
-                {%- if vars.elasticsearch.transport_security.ca_from is defined -%}
+                {%- if vars.elasticsearch.transport_security.ca_from -%}
                 {%- if ansible_system == 'Linux' -%}
                   /etc/elasticsearch/cert.p12
                 {%- else -%}

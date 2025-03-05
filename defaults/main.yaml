@@ -55,11 +55,19 @@ elasticsearch:
     xpack:
       security:
         transport: >-
-          {% if vars.elasticsearch.transport_security.ca_from %}
-          {'ssl': {'enabled': true }, 'keystore'" {'secure_password': '', 'path': {{ '/etc/elasticsearch/cert.p12' if ansible_system == 'Linux' else '/usr/local/etc/elasticsearch/cert.p12' }} } }
-          {% else %}
-          omit
-          {% endif %}
+            {% if vars.elasticsearch.transport_security.ca_from %}
+              {
+                "ssl": {
+                  "enabled": true,
+                  "keystore": {
+                    "secure_password": "",
+                    "path": "{{ '/etc/elasticsearch/cert.p12' if ansible_system == 'Linux' else '/usr/local/etc/elasticsearch/cert.p12' }}"
+                  }
+                }
+              }
+            {% else %}
+            omit
+            {% endif %}
         http:
           ssl:
             enabled: false

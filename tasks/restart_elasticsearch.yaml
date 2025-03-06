@@ -2,7 +2,13 @@
 - name: Restart Elasticsearch on configuration change
   block:
     - name: Restart Elasticsearch
-      when: jvm_configuration.changed or es_configuration.changed or log4j2_configuration.changed or ca_generate.changed or certificates_generate.changed or es_new_keystore_password.changed
+      when: >-
+        jvm_configuration.changed or
+        es_configuration.changed or
+        log4j2_configuration.changed or
+        (ca_generate.changed | default(False)) or
+        (certificates_generate.changed | default(False)) or
+        (es_new_keystore_password.changed | default(False))
       ansible.builtin.service:
         name: elasticsearch
         state: restarted

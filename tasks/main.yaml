@@ -10,7 +10,9 @@
   ansible.builtin.include_tasks: config.yaml
 
 - name: Generate certificates for transport security
-  when: elasticsearch.transport_security.ca_from
+  when:
+    - elasticsearch.transport_security.ca_from is defined
+    - elasticsearch.transport_security.ca_from != None
   ansible.builtin.include_tasks: transport_security.yaml
 
 - name: Restart Elasticsearch on config changes

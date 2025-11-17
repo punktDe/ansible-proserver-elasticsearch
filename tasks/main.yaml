@@ -19,7 +19,7 @@
   ansible.builtin.include_tasks: restart_elasticsearch.yaml
 
 - name: Set password for elastic superuser (ES 8 or newer)
-  when: elasticsearch.version is version('8', '>=') and elasticsearch.xpack.security.enabled
+  when: elasticsearch.version is version('8', '>=') and elasticsearch["elasticsearch.yml"].xpack.security.enabled
   ansible.builtin.include_tasks: password.yaml
 
 - name: Configure ElasticSearch plugins

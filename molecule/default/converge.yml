@@ -8,10 +8,10 @@
     elasticsearch:
       transport_security:
         ca_from: "{{ inventory_hostname }}"
-      users:
-        builtin:
-          elastic:
-            password: supersecretpassword
+      elasticsearch.yml:
+        xpack:
+          security:
+            enabled: false
   tasks:
     - name: "Include ansible-proserver-elasticsearch"
       ansible.builtin.include_role:

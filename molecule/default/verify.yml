@@ -2,18 +2,10 @@
 - name: Verify
   hosts: all
   gather_facts: false
-  vars:
-    elasticsearch:
-      users:
-        builtin:
-          elastic:
-            password: supersecretpassword
   tasks:
     - name: Make sure that the cluster is green
       ansible.builtin.uri:
         url: http://localhost:9200/_cluster/health
         user: elastic
-        password: "{{ elasticsearch.users.builtin.elastic.password }}"
-        force_basic_auth: yes
       register: this
       failed_when: this is failed or this.json.status != "green"

@@ -63,6 +63,8 @@ elasticsearch:
         enabled: "{{ ansible_system == 'Linux' }}"
   log4j2.properties: {}
   jvm.options:
+    "-Xms": 4g
+    "-Xmx": 4g
     "-Djna.tmpdir": >-
       {%- if ansible_system == 'Linux' -%}
         =/var/lib/elasticsearch/jna

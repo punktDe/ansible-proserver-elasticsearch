@@ -6,12 +6,12 @@
     ANSIBLE_HASH_BEHAVIOUR: merge
   vars:
     elasticsearch:
+      users:
+        builtin:
+          elastic:
+            password: supersecretpassword
       transport_security:
         ca_from: "{{ inventory_hostname }}"
-      elasticsearch.yml:
-        xpack:
-          security:
-            enabled: false
   tasks:
     - name: "Include ansible-proserver-elasticsearch"
       ansible.builtin.include_role:

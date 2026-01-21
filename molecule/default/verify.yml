@@ -5,6 +5,7 @@
   tasks:
     - name: Make sure that the cluster is green
       ansible.builtin.uri:
+        password: supersecretpassword
         url: http://localhost:9200/_cluster/health
         user: elastic
       register: this

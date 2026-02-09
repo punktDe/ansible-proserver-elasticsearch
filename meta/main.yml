@@ -1,10 +1,8 @@
 ---
 dependencies:
   - role: dehydrated
-    src: "https://github.com/punktDe/ansible-proserver-dehydrated"
     when: elasticsearch.use_dehydrated
   - role: nginx
-    src: "https://github.com/punktDe/ansible-proserver-nginx"
     when: elasticsearch.use_dehydrated
 
 galaxy_info:

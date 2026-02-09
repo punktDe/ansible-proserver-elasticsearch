@@ -60,9 +60,9 @@ Elasticsearch role for Proserver
 | `repository` |  | str | no | https://artifacts.elastic.co/packages/{{ vars.elasticsearch.version }}.x/apt |
 
 ## Dependencies
-- [dehydrated](https://github.com/punktDe/ansible-proserver-dehydrated)
+- dehydrated
   - **Condition**: `elasticsearch.use_dehydrated`
-- [nginx](https://github.com/punktDe/ansible-proserver-nginx)
+- nginx
   - **Condition**: `elasticsearch.use_dehydrated`
 
 ## Installation

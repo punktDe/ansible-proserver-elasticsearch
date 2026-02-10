@@ -87,15 +87,15 @@ argument_specs:
                     using this CA.
               cert_dns:
                 type: "list"
-                default: "{{ [inventory_hostname] + [ansible_nodename] }}"
+                default: "{{ [inventory_hostname] + [ansible_facts['nodename']] }}"
                 elements: "str"
                 description:
                   - Domain names for which the transport security certificate will be generated
-                  - Includes inventory_hostname and ansible_nodename of the current node by default
+                  - Includes inventory_hostname and ansible_facts['nodename'] of the current node by default
               cert_ips:
                 type: "list"
                 elements: "str"
-                default: "{{ ansible_all_ipv4_addresses + ansible_all_ipv6_addresses }}"
+                default: "{{ ansible_facts['all_ipv4_addresses'] + ansible_facts['all_ipv6_addresses'] }}"
                 description:
                   - IP addresses for which the transport security certificate will be generated
                   - Includes all of the machine's IPv4 and IPv6 addresses by default
@@ -134,7 +134,7 @@ argument_specs:
                     default: https://artifacts.elastic.co/GPG-KEY-elasticsearch
                   repository:
                     type: "str"
-                    default: "https://artifacts.elastic.co/packages/{{ vars.elasticsearch.version }}.x/apt"
+                    default: "https://artifacts.elastic.co/packages/{{ elasticsearch.version }}.x/apt"
           plugins:
             type: "dict"
             required: false

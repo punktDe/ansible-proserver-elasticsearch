@@ -26,7 +26,7 @@
     cmd: "{{ elasticsearch.prefix.bin | quote }}/elasticsearch-plugin install --batch {{ item | quote }}"
 
 - name: Configure systemd service and helper scripts (Linux)
-  when: ansible_system == 'Linux'
+  when: ansible_facts['system'] == 'Linux'
   block:
     - name: Template elasticsearch-plugin-auto-update script
       ansible.builtin.template:

@@ -30,13 +30,13 @@
   ansible.builtin.lineinfile:
     path: /etc/default/elasticsearch
     create: yes
-    regexp: '^#?RESTART_ON_UPGRADE='
+    regexp: "^#?RESTART_ON_UPGRADE="
     line: RESTART_ON_UPGRADE=true
     owner: root
     mode: "0644"
 
 - name: Install Elasticsearch
-  when: ansible_os_family == 'Debian'
+  when: ansible_facts['os_family'] == 'Debian'
   notify: Restart Elasticsearch
   ansible.builtin.apt:
     name: elasticsearch

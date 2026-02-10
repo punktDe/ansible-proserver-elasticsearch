@@ -1,4 +1,11 @@
 <!-- BEGIN_ANSIBLE_DOCS -->
+<!--
+Do not edit README.md directly!
+
+This file is generated automatically by aar-doc and will be overwritten.
+
+Please edit meta/argument_specs.yml instead.
+-->
 # ansible-proserver-elasticsearch
 
 Elasticsearch role for Proserver
@@ -43,8 +50,8 @@ Elasticsearch role for Proserver
 |Option|Description|Type|Required|Default|
 |---|---|---|---|---|
 | `ca_from` | The inventory hostname of the machine which should generate the CA for transport security. Setting this variable activates transport security The resulting CA will then be copied to all the other inventory members which satisfy the following requirements \* ansible-proserver-elasticsearch role is executed on the machine \* The machine has the `elasticsearch.transport_security.ca_from variable set which is not equal to the machine's `inventory_hostname` The certificates will be generated on every machine in the cluster individually using this CA. | str | no |  |
-| `cert_dns` | Domain names for which the transport security certificate will be generated Includes inventory_hostname and ansible_nodename of the current node by default | list of 'str' | no | {{ [inventory_hostname] + [ansible_nodename] }} |
-| `cert_ips` | IP addresses for which the transport security certificate will be generated Includes all of the machine's IPv4 and IPv6 addresses by default | list of 'str' | no | {{ ansible_all_ipv4_addresses + ansible_all_ipv6_addresses }} |
+| `cert_dns` | Domain names for which the transport security certificate will be generated Includes inventory_hostname and ansible_facts['nodename'] of the current node by default | list of 'str' | no | {{ [inventory_hostname] + [ansible_facts['nodename']] }} |
+| `cert_ips` | IP addresses for which the transport security certificate will be generated Includes all of the machine's IPv4 and IPv6 addresses by default | list of 'str' | no | {{ ansible_facts['all_ipv4_addresses'] + ansible_facts['all_ipv6_addresses'] }} |
 
 #### Options for `elasticsearch.repository`
 
@@ -57,7 +64,7 @@ Elasticsearch role for Proserver
 |Option|Description|Type|Required|Default|
 |---|---|---|---|---|
 | `key_url` |  | str | no | https://artifacts.elastic.co/GPG-KEY-elasticsearch |
-| `repository` |  | str | no | https://artifacts.elastic.co/packages/{{ vars.elasticsearch.version }}.x/apt |
+| `repository` |  | str | no | https://artifacts.elastic.co/packages/{{ elasticsearch.version }}.x/apt |
 
 ## Dependencies
 - dehydrated

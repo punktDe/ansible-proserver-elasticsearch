@@ -9,31 +9,31 @@ elasticsearch:
         password:
   prefix:
     config: >-
-      {%- if ansible_system == 'Linux' -%}
+      {%- if ansible_facts['system'] == 'Linux' -%}
         /etc/elasticsearch
       {%- else -%}
         /usr/local/etc/elasticsearch
       {%- endif -%}
     bin: >-
-      {%- if ansible_system == 'Linux' -%}
+      {%- if ansible_facts['system'] == 'Linux' -%}
         /usr/share/elasticsearch/bin
       {%- else -%}
         /usr/local/lib/elasticsearch/bin
       {%- endif -%}
     plugins: >-
-      {%- if ansible_system == 'Linux' -%}
+      {%- if ansible_facts['system'] == 'Linux' -%}
         /usr/share/elasticsearch/plugins
       {%- else -%}
         /usr/local/lib/elasticsearch/plugins
       {%- endif -%}
   transport_security:
     ca_from:
-    cert_dns: "{{ [inventory_hostname] + [ansible_nodename] }}"
-    cert_ips: "{{ ansible_all_ipv4_addresses + ansible_all_ipv6_addresses }}"
+    cert_dns: "{{ [inventory_hostname] + [ansible_facts['nodename']] }}"
+    cert_ips: "{{ ansible_facts['all_ipv4_addresses'] + ansible_facts['all_ipv6_addresses'] }}"
   elasticsearch.yml:
     bootstrap:
       system_call_filter: >-
-        {%- if ansible_system == 'Linux' -%}
+        {%- if ansible_facts['system'] == 'Linux' -%}
           {{ true }}
         {%- else -%}
           {{ false }}
@@ -46,7 +46,7 @@ elasticsearch:
       name: "{{ inventory_hostname }}"
     path:
       data: >-
-        {%- if ansible_system == 'Linux' -%}
+        {%- if ansible_facts['system'] == 'Linux' -%}
           /var/lib/elasticsearch
         {%- else -%}
           /var/db/elasticsearch
@@ -55,18 +55,18 @@ elasticsearch:
     xpack:
       security:
         enabled: true
-        transport: "{{ {'ssl': {'enabled': True, 'keystore': {'secure_password': '', 'path': '/etc/elasticsearch/cert.p12' if ansible_system == 'Linux' else '/usr/local/etc/elasticsearch/cert.p12'}}} if vars.elasticsearch.transport_security.ca_from else {'ssl': {'enabled': False}} }}"
+        transport: "{{ {'ssl': {'enabled': True, 'keystore': {'secure_password': '', 'path': '/etc/elasticsearch/cert.p12' if ansible_facts['system'] == 'Linux' else '/usr/local/etc/elasticsearch/cert.p12'}}} if elasticsearch.transport_security.ca_from else {'ssl': {'enabled': False}} }}"
         http:
           ssl:
             enabled: false
       ml:
-        enabled: "{{ ansible_system == 'Linux' }}"
+        enabled: "{{ ansible_facts['system'] == 'Linux' }}"
   log4j2.properties: {}
   jvm.options:
     "-Xms": 4g
     "-Xmx": 4g
     "-Djna.tmpdir": >-
-      {%- if ansible_system == 'Linux' -%}
+      {%- if ansible_facts['system'] == 'Linux' -%}
         =/var/lib/elasticsearch/jna
       {%- else -%}
         =/var/db/elasticsearch/jna
@@ -75,6 +75,6 @@ elasticsearch:
   repository:
     apt:
       key_url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-      repository: https://artifacts.elastic.co/packages/{{ vars.elasticsearch.version }}.x/apt
+      repository: https://artifacts.elastic.co/packages/{{ elasticsearch.version }}.x/apt
   plugins: {}
   http_proxy:

@@ -27,10 +27,11 @@
     path: "{{ elasticsearch.prefix.config }}/elasticsearch.keystore"
 
 - name: Ensure correct keystore permissions
-  when: elasticsearch_keystore.stat.exists && elasticsearch_keystore.stat.pw_name != "elasticsearch"
+  when: elasticsearch_keystore.stat.exists and elasticsearch_keystore.stat.pw_name != "elasticsearch"
   ansible.builtin.file:
     path: "{{ elasticsearch.prefix.config }}/elasticsearch.keystore"
     owner: root
+    mode: "0660"
     group: elasticsearch
 
 - name: Update apt cache

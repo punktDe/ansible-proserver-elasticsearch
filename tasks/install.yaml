@@ -21,6 +21,18 @@
     state: present
     enabled: yes
 
+- name: Check if keystore exists
+  register: elasticsearch_keystore
+  ansible.builtin.stat:
+    path: "{{ elasticsearch.prefix.config }}/elasticsearch.keystore"
+
+- name: Ensure correct keystore permissions
+  when: elasticsearch_keystore.stat.exists && elasticsearch_keystore.stat.pw_name != "elasticsearch"
+  ansible.builtin.file:
+    path: "{{ elasticsearch.prefix.config }}/elasticsearch.keystore"
+    owner: root
+    group: elasticsearch
+
 - name: Update apt cache
   when: elasticsearch_repository_added.changed
   ansible.builtin.apt:

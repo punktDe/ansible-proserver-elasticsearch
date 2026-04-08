@@ -21,6 +21,19 @@
     state: present
     enabled: yes
 
+- name: Check if keystore exists
+  register: elasticsearch_keystore
+  ansible.builtin.stat:
+    path: "{{ elasticsearch.prefix.config }}/elasticsearch.keystore"
+
+- name: Ensure correct keystore permissions
+  when: elasticsearch_keystore.stat.exists and elasticsearch_keystore.stat.pw_name != "root"
+  ansible.builtin.file:
+    path: "{{ elasticsearch.prefix.config }}/elasticsearch.keystore"
+    owner: root
+    mode: "0660"
+    group: elasticsearch
+
 - name: Update apt cache
   when: elasticsearch_repository_added.changed
   ansible.builtin.apt:
@@ -39,4 +52,4 @@
   when: ansible_facts['os_family'] == 'Debian'
   notify: Restart Elasticsearch
   ansible.builtin.apt:
-    name: elasticsearch
+    name: "elasticsearch>={{ elasticsearch.version }}.0"

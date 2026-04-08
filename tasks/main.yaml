@@ -6,6 +6,9 @@
 - name: Configure Elasticsearch
   ansible.builtin.include_tasks: config.yaml
 
+- name: Configure ElasticSearch plugins
+  ansible.builtin.include_tasks: plugins.yaml
+
 - name: Start the Elasticsearch service
   ansible.builtin.include_tasks: service.yaml
 
@@ -21,10 +24,6 @@
 - name: Set password for elastic superuser (ES 8 or newer)
   when: elasticsearch.version is version('8', '>=') and elasticsearch["elasticsearch.yml"].xpack.security.enabled
   ansible.builtin.include_tasks: password.yaml
-
-- name: Configure ElasticSearch plugins
-  ansible.builtin.include_tasks: plugins.yaml
-  when: elasticsearch.plugins | default({}) | length > 0
 
 - name: Set up a reverse proxy for Elasticsearch
   when: elasticsearch.use_dehydrated

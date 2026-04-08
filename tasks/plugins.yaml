@@ -3,54 +3,72 @@
   ansible.builtin.set_fact:
     elasticsearch_plugins: "{{ elasticsearch.plugins | dict2items | selectattr('value', 'eq', true) | map(attribute='key') | list }}"
 
-- name: Get installed Elasticsearch plugins
-  changed_when: false
-  register: elasticsearch_plugin_list
-  ansible.builtin.command:
-    cmd: "{{ elasticsearch.prefix.bin | quote }}/elasticsearch-plugin list"
+- name: Remove the systemd plugins override service if no plugins are specified
+  loop:
+    - /usr/local/bin/elasticsearch-plugin-auto-update
+    - /etc/systemd/system/elasticsearch.service.d/elasticsearch-plugin-auto-update.conf
+  when: "ansible_facts['system'] == 'Linux' and elasticsearch.plugins | length == 0"
+  register: elasticsearch_systemd_plugin_override_removed
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
 
-- name: Install Elasticsearch plugins
-  loop: "{{ elasticsearch_plugins }}"
-  when: item not in elasticsearch_plugin_list.stdout_lines
-  changed_when: yes
-  notify: Restart Elasticsearch
-  environment:
-    ES_JAVA_OPTS: >
-      {% if elasticsearch.http_proxy %}
-      -Dhttp.proxyHost={{ elasticsearch.http_proxy | urlsplit('hostname') }}
-      -Dhttp.proxyPort={{ elasticsearch.http_proxy | urlsplit('port') }}
-      -Dhttps.proxyHost={{ elasticsearch.http_proxy | urlsplit('hostname') }}
-      -Dhttps.proxyPort={{ elasticsearch.http_proxy | urlsplit('port') }}
-      {% endif %}
-  ansible.builtin.command:
-    cmd: "{{ elasticsearch.prefix.bin | quote }}/elasticsearch-plugin install --batch {{ item | quote }}"
+- name: Reload systemd
+  when: elasticsearch_systemd_plugin_override_removed is changed
+  ansible.builtin.systemd:
+    daemon_reload: yes
 
-- name: Configure systemd service and helper scripts (Linux)
-  when: ansible_facts['system'] == 'Linux'
+- name: Handle plugins installation if plugins are to be installed
+  when: "elasticsearch.plugins | length > 0"
   block:
-    - name: Template elasticsearch-plugin-auto-update script
-      ansible.builtin.template:
-        src: elasticsearch-plugin-auto-update/elasticsearch-plugin-auto-update
-        dest: "/usr/local/bin/elasticsearch-plugin-auto-update"
-        owner: root
-        mode: "0755"
+    - name: Get installed Elasticsearch plugins
+      changed_when: false
+      register: elasticsearch_plugin_list
+      ansible.builtin.command:
+        cmd: "{{ elasticsearch.prefix.bin | quote }}/elasticsearch-plugin list"
 
-    - name: Create override directory for elasticsearch.service
-      ansible.builtin.file:
-        path: /etc/systemd/system/elasticsearch.service.d
-        mode: "0755"
-        owner: "root"
-        state: directory
+    - name: Install Elasticsearch plugins
+      loop: "{{ elasticsearch_plugins }}"
+      when: item not in elasticsearch_plugin_list.stdout_lines
+      changed_when: yes
+      notify: Restart Elasticsearch
+      environment:
+        ES_JAVA_OPTS: >
+          {% if elasticsearch.http_proxy %}
+          -Dhttp.proxyHost={{ elasticsearch.http_proxy | urlsplit('hostname') }}
+          -Dhttp.proxyPort={{ elasticsearch.http_proxy | urlsplit('port') }}
+          -Dhttps.proxyHost={{ elasticsearch.http_proxy | urlsplit('hostname') }}
+          -Dhttps.proxyPort={{ elasticsearch.http_proxy | urlsplit('port') }}
+          {% endif %}
+      ansible.builtin.command:
+        cmd: "{{ elasticsearch.prefix.bin | quote }}/elasticsearch-plugin install --batch {{ item | quote }}"
 
-    - name: Template systemd overrides for elasticsearch-plugin-auto-update
-      ansible.builtin.template:
-        src: elasticsearch-plugin-auto-update/elasticsearch-plugin-auto-update.conf
-        dest: /etc/systemd/system/elasticsearch.service.d/elasticsearch-plugin-auto-update.conf
-        mode: "0644"
-        owner: root
-      register: elasticsearch_plugin_auto_update_systemd_template_result
+    - name: Configure systemd service and helper scripts (Linux)
+      when: ansible_facts['system'] == 'Linux'
+      block:
+        - name: Template elasticsearch-plugin-auto-update script
+          ansible.builtin.template:
+            src: elasticsearch-plugin-auto-update/elasticsearch-plugin-auto-update
+            dest: "/usr/local/bin/elasticsearch-plugin-auto-update"
+            owner: root
+            mode: "0755"
 
-    - name: Reload systemd
-      when: elasticsearch_plugin_auto_update_systemd_template_result.changed
-      ansible.builtin.systemd:
-        daemon_reload: yes
+        - name: Create override directory for elasticsearch.service
+          ansible.builtin.file:
+            path: /etc/systemd/system/elasticsearch.service.d
+            mode: "0755"
+            owner: "root"
+            state: directory
+
+        - name: Template systemd overrides for elasticsearch-plugin-auto-update
+          ansible.builtin.template:
+            src: elasticsearch-plugin-auto-update/elasticsearch-plugin-auto-update.conf
+            dest: /etc/systemd/system/elasticsearch.service.d/elasticsearch-plugin-auto-update.conf
+            mode: "0644"
+            owner: root
+          register: elasticsearch_plugin_auto_update_systemd_template_result
+
+        - name: Reload systemd
+          when: elasticsearch_plugin_auto_update_systemd_template_result.changed
+          ansible.builtin.systemd:
+            daemon_reload: yes

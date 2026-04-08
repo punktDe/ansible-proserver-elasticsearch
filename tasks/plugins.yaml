@@ -7,7 +7,7 @@
   loop:
     - /usr/local/bin/elasticsearch-plugin-auto-update
     - /etc/systemd/system/elasticsearch.service.d/elasticsearch-plugin-auto-update.conf
-  when: "ansible_facts['system'] == 'Linux' and elasticsearch.plugins | length == 0"
+  when: "ansible_facts['system'] == 'Linux' and (elasticsearch_plugins | length == 0)"
   register: elasticsearch_systemd_plugin_override_removed
   ansible.builtin.file:
     path: "{{ item }}"
@@ -17,6 +17,20 @@
   when: elasticsearch_systemd_plugin_override_removed is changed
   ansible.builtin.systemd:
     daemon_reload: yes
+
+- name: Ensure that ingest-attachment plugin is not to be installed
+  when: elasticsearch.version >= 8
+  ansible.builtin.assert:
+    that: "{{ 'ingest-attachment' not in elasticsearch_plugins }}"
+    fail_msg: |
+      Starting from ES 8, ingest-attachment is part of Elasticsearch core distribution.
+      Please remove ingest-attachment from elasticsearch.plugins!
+
+- name: Ensure ingest-attachment plugin is removed when upgrading to ES 8
+  when: elasticsearch.version >= 8
+  ansible.builtin.file:
+    path: "{{ elasticsearch.prefix.plugins }}/ingest-attachment"
+    state: absent
 
 - name: Handle plugins installation if plugins are to be installed
   when: "elasticsearch.plugins | length > 0"

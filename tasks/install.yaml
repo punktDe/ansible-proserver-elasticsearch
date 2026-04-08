@@ -39,4 +39,4 @@
   when: ansible_facts['os_family'] == 'Debian'
   notify: Restart Elasticsearch
   ansible.builtin.apt:
-    name: elasticsearch
+    name: "elasticsearch>={{ elasticsearch.version }}.0"

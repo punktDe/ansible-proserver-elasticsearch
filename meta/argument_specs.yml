@@ -48,12 +48,19 @@ argument_specs:
             description:
               - Sets folders/prefixes for Elasticsearch directories
             options:
+              data:
+                type: "str"
+                required: true
+                description:
+                  - Path for data files (e.g. indices_
+                  - Defaults to /etc/elasticsearch on Linux and /usr/local/etc/elasticsearch on other systems
               config:
                 type: "str"
                 required: true
                 description:
-                  - Path for configuration files (e.g. elasticsearch.yml)
-                  - Defaults to /etc/elasticsearch on Linux and /usr/local/etc/elasticsearch on other systems
+                  - Path for Elasticsearch data files (indices, etc.)
+                  - Defaults to /var/lib/elasticsearch on Linux and /var/db/elasticsearch on other systems
+                  - Can be customized to store Elasticsearch data on an external volume
               bin:
                 type: "str"
                 required: true

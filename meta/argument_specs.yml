@@ -52,7 +52,7 @@ argument_specs:
                 type: "str"
                 required: true
                 description:
-                  - Path for data files (e.g. indices_
+                  - Path for configuration files (e.g. elasticsearch.yml)
                   - Defaults to /etc/elasticsearch on Linux and /usr/local/etc/elasticsearch on other systems
               config:
                 type: "str"

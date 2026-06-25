@@ -48,13 +48,13 @@ argument_specs:
             description:
               - Sets folders/prefixes for Elasticsearch directories
             options:
-              data:
+              config:
                 type: "str"
                 required: true
                 description:
                   - Path for configuration files (e.g. elasticsearch.yml)
                   - Defaults to /etc/elasticsearch on Linux and /usr/local/etc/elasticsearch on other systems
-              config:
+              data:
                 type: "str"
                 required: true
                 description:

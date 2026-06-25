@@ -41,8 +41,8 @@ Elasticsearch role for Proserver
 
 |Option|Description|Type|Required|Default|
 |---|---|---|---|---|
-| `data` | Path for configuration files (e.g. elasticsearch.yml) Defaults to /etc/elasticsearch on Linux and /usr/local/etc/elasticsearch on other systems | str | yes |  |
-| `config` | Path for Elasticsearch data files (indices, etc.) Defaults to /var/lib/elasticsearch on Linux and /var/db/elasticsearch on other systems Can be customized to store Elasticsearch data on an external volume | str | yes |  |
+| `config` | Path for configuration files (e.g. elasticsearch.yml) Defaults to /etc/elasticsearch on Linux and /usr/local/etc/elasticsearch on other systems | str | yes |  |
+| `data` | Path for Elasticsearch data files (indices, etc.) Defaults to /var/lib/elasticsearch on Linux and /var/db/elasticsearch on other systems Can be customized to store Elasticsearch data on an external volume | str | yes |  |
 | `bin` | Path for Elasticsearch binaries (e.g. elasticsearch-keystore) Defaults to /usr/share/elasticsearch/bin on Linux and /usr/local/lib/elasticsearch/bin on other systems | str | yes |  |
 | `plugins` | Path for installing Elasticsearch plugins Defaults to /usr/share/elasticsearch/plugins on Linux and /usr/local/lib/elasticsearch/plugins on other systems | str | yes |  |
 

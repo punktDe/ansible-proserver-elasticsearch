@@ -8,6 +8,12 @@ elasticsearch:
       elastic:
         password:
   prefix:
+    data: >-
+      {%- if ansible_facts['system'] == 'Linux' -%}
+        /var/lib/elasticsearch
+      {%- else -%}
+        /var/db/elasticsearch
+      {%- endif -%}
     config: >-
       {%- if ansible_facts['system'] == 'Linux' -%}
         /etc/elasticsearch

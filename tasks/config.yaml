@@ -56,11 +56,10 @@
 - name: Create directory for Elasticsearch data
   ansible.builtin.file:
     path: "{{ elasticsearch.prefix.data }}"
-    owner: root
+    owner: elasticsearch
     group: elasticsearch
-    mode: "0775"
+    mode: "0755"
     state: directory
-  notify: Restart Elasticsearch
 
 - name: Allow Elasticsearch to update its own configuration
   ansible.builtin.file:

@@ -69,8 +69,8 @@ elasticsearch:
         enabled: false
   log4j2.properties: {}
   jvm.options:
-    "-Xms": 4g
-    "-Xmx": 4g
+    "-Xms": 1g
+    "-Xmx": 1g
     "-Djna.tmpdir": >-
       {%- if ansible_facts['system'] == 'Linux' -%}
         =/var/lib/elasticsearch/jna

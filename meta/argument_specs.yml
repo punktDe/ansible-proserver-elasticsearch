@@ -123,7 +123,9 @@ argument_specs:
             type: "dict"
             required: true
             description:
-              - Allows to define options included in the log4j2.properties file
+              - Allows to define JVM options (e.g. the heap size)
+              - Written to jvm.options.d/zz-ansible.options, which Elasticsearch reads after jvm.options
+                and the other files in jvm.options.d, so these values win
               - Consult defaults/main.yml for options set by default
           repository:
             type: "dict"

@@ -28,18 +28,37 @@
     config_filepath: "{{ elasticsearch.prefix.config }}/log4j2.properties"
   notify: Restart Elasticsearch
 
-- name: Configure Elasticsearch (jvm.options)
+- name: Create directory for JVM options
+  ansible.builtin.file:
+    path: "{{ elasticsearch.prefix.config }}/jvm.options.d"
+    group: elasticsearch
+    mode: "u+rwx,g+rx"
+    state: directory
+
+# ES reads jvm.options, then jvm.options.d/*.options by name, and the last value wins: zz- beats e.g. the proServer blueprint's heap-size.options
+- name: Configure Elasticsearch (jvm.options.d)
   register: jvm_configuration
+  ansible.builtin.copy:
+    dest: "{{ elasticsearch.prefix.config }}/jvm.options.d/zz-ansible.options"
+    owner: root
+    group: elasticsearch
+    mode: "0644"
+    content: |
+      # Managed by Ansible (ansible-proserver-elasticsearch)
+      {% for key, value in elasticsearch['jvm.options'].items() if value is not none %}
+      {{ key }}{{ value }}
+      {% endfor %}
+  notify: Restart Elasticsearch
+
+- name: Remove options from jvm.options that are now set in jvm.options.d
+  register: jvm_options_cleanup
   ansible.builtin.lineinfile:
-    path: "{{ config_filepath }}"
+    path: "{{ elasticsearch.prefix.config }}/jvm.options"
     regexp: "^{{ item.key | regex_escape }}"
-    line: "{{ item.key }}{{ item.value }}"
-    state: "{{ 'present' if item.value is not none else 'absent' }}"
+    state: absent
   loop_control:
-    label: "{{ config_filepath }} {{ item.key }}{{ item.value }}"
+    label: "{{ item.key }}"
   with_dict: "{{ elasticsearch['jvm.options'] }}"
-  vars:
-    config_filepath: "{{ elasticsearch.prefix.config }}/jvm.options"
   notify: Restart Elasticsearch
 
 - name: Create directory for Elasticsearch scripts

@@ -42,6 +42,36 @@
     config_filepath: "{{ elasticsearch.prefix.config }}/jvm.options"
   notify: Restart Elasticsearch
 
+- name: Configure Java for Elasticsearch (FreeBSD)
+  when:
+    - ansible_facts['system'] == 'FreeBSD'
+    - elasticsearch.java_home | default('', true) | length > 0
+  block:
+    - name: Check if the configured Java exists
+      register: elasticsearch_java_binary
+      ansible.builtin.stat:
+        path: "{{ elasticsearch.java_home }}/bin/java"
+
+    # Pinning a missing Java would keep Elasticsearch from starting
+    - name: Ensure the configured Java exists
+      ansible.builtin.assert:
+        that: elasticsearch_java_binary.stat.exists
+        fail_msg: >-
+          {{ elasticsearch.java_home }}/bin/java does not exist.
+          Install the matching OpenJDK package or set elasticsearch.java_home to an installed Java.
+
+    - name: Configure Elasticsearch (Java home)
+      register: java_home_configuration
+      ansible.builtin.lineinfile:
+        path: /usr/local/etc/rc.conf.d/elasticsearch
+        regexp: "^elasticsearch_java_home="
+        line: 'elasticsearch_java_home="{{ elasticsearch.java_home }}"'
+        create: yes
+        owner: root
+        group: wheel
+        mode: "0644"
+      notify: Restart Elasticsearch
+
 - name: Create directory for Elasticsearch scripts
   ansible.builtin.file:
     path: "{{ item }}"

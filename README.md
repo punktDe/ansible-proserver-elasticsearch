@@ -24,16 +24,17 @@ Elasticsearch role for Proserver
 
 |Option|Description|Type|Required|Default|
 |---|---|---|---|---|
-| `use_dehydrated` | Whether to configure an SSL certificate and a reverse proxy for Elasticsearch. If set to `true`, will use ansible-proserver-nginx and ansible-proserver-dehydrated to set up an Nginx-based reverse proxy with a valid SSL certificate that listens on 0.0.0.0:443. By default, HTTPS-01 challenge will be used to create the SSL certificate. In order for this to work, `elasticsearch.domain` has to be set to a valid, DNS-resolveable FQDN (defaults to `inventory_hostname`). Please consult the documentation of [ansible-proserver-dehydrated](https://github.com/punktDe/ansible-proserver-dehydrated) for other available challenges | bool | no | False |
-| `domain` | A domain that will be used for the Elasticsearch cluster name as well as reverse proxy (the latter only applies when `elasticsearch.use_dehydrated` is set) | str | no | {{ inventory_hostname }} |
-| `version` | The major version of Elasticsearch to be configured/installed. If set to >=8, will require setting the password for the `elastic` superuser (`elasticsearch.users.builtin.elastic.password), since security is enabled by default starting with Elasticsearch 8.x | int | no | 8 |
+| `use_dehydrated` | Whether to configure an SSL certificate and a reverse proxy for Elasticsearch. If set to `true`, will use ansible-proserver-nginx and ansible-proserver-dehydrated to set up an Nginx-based reverse proxy with a valid SSL certificate that listens on 0.0.0.0:443. By default, HTTPS-01 challenge will be used to create the SSL certificate. In order for this to work, `elasticsearch.domain` has to be set to a valid, DNS-resolveable FQDN (defaults to `inventory_hostname`). Please consult the documentation of [ansible-proserver-dehydrated](https://github.com/punktDe/ansible-proserver-dehydrated) for other available challenges | bool | no | `False` |
+| `domain` | A domain that will be used for the Elasticsearch cluster name as well as reverse proxy (the latter only applies when `elasticsearch.use_dehydrated` is set) | str | no | `{{ inventory_hostname }}` |
+| `version` | The major version of Elasticsearch to be configured/installed. If set to >=8, will require setting the password for the `elastic` superuser (`elasticsearch.users.builtin.elastic.password), since security is enabled by default starting with Elasticsearch 8.x | int | no | `8` |
+| `java_home` | The Java installation Elasticsearch runs with (FreeBSD only). Written to `elasticsearch_java_home` in /usr/local/etc/rc.conf.d/elasticsearch Defaults to /usr/local/openjdk21 for Elasticsearch 8 on FreeBSD, and is empty otherwise Set to an empty value to keep the Java the Elasticsearch package was built with | str | no |  |
 | `users` | Allows for setting passwords for Elasticsearch users As of now, only supports setting the password for the `elastic` user (`elasticsearch.users.builtin.elastic.password`) | dict | yes |  |
-| `prefix` | Sets folders/prefixes for Elasticsearch directories | dict of 'prefix' options | yes |  |
-| `transport_security` | Settings for transport security (disabled by default) | dict of 'transport_security' options | yes |  |
+| `prefix` | Sets folders/prefixes for Elasticsearch directories | dict of `prefix` [options](#options-for-main--elasticsearch--prefix) | yes |  |
+| `transport_security` | Settings for transport security (disabled by default) | dict of `transport_security` [options](#options-for-main--elasticsearch--transport_security) | yes |  |
 | `elasticsearch.yml` | Allows to define options included in the elasticsearch.yml file Consult defaults/main.yml for options set by default, and https://www.elastic.co/guide/en/elasticsearch/reference/current/settings.html for a guide on how to configure Elasticsearch | dict | yes |  |
 | `log4j2.properties` | Allows to define options included in the log4j2.properties file | dict | no |  |
 | `jvm.options` | Allows to define options included in the log4j2.properties file Consult defaults/main.yml for options set by default | dict | yes |  |
-| `repository` |  | dict of 'repository' options | yes |  |
+| `repository` |  | dict of `repository` [options](#options-for-main--elasticsearch--repository) | yes |  |
 | `plugins` | Will install the specified plugins using the `elasticsearch-plugin install` command | dict | no |  |
 | `http_proxy` | Specifies HTTP proxy to be used for Elasticsearch commands that require Internet access (e.g. elasticsearch-plugin) | str | no |  |
 
@@ -51,21 +52,21 @@ Elasticsearch role for Proserver
 |Option|Description|Type|Required|Default|
 |---|---|---|---|---|
 | `ca_from` | The inventory hostname of the machine which should generate the CA for transport security. Setting this variable activates transport security The resulting CA will then be copied to all the other inventory members which satisfy the following requirements \* ansible-proserver-elasticsearch role is executed on the machine \* The machine has the `elasticsearch.transport_security.ca_from variable set which is not equal to the machine's `inventory_hostname` The certificates will be generated on every machine in the cluster individually using this CA. | str | no |  |
-| `cert_dns` | Domain names for which the transport security certificate will be generated Includes inventory_hostname and ansible_facts['nodename'] of the current node by default | list of 'str' | no | {{ [inventory_hostname] + [ansible_facts['nodename']] }} |
-| `cert_ips` | IP addresses for which the transport security certificate will be generated Includes all of the machine's IPv4 and IPv6 addresses by default | list of 'str' | no | {{ ansible_facts['all_ipv4_addresses'] + ansible_facts['all_ipv6_addresses'] }} |
+| `cert_dns` | Domain names for which the transport security certificate will be generated Includes inventory_hostname and ansible_facts['nodename'] of the current node by default | list of `str` | no | `{{ [inventory_hostname] + [ansible_facts['nodename']] }}` |
+| `cert_ips` | IP addresses for which the transport security certificate will be generated Includes all of the machine's IPv4 and IPv6 addresses by default | list of `str` | no | `{{ ansible_facts['all_ipv4_addresses'] + ansible_facts['all_ipv6_addresses'] }}` |
 
 #### Options for `elasticsearch.repository`
 
 |Option|Description|Type|Required|Default|
 |---|---|---|---|---|
-| `apt` | Configuration options for APT repository used to install Elasticsearch (only applies for Debian-based systems) | dict of 'apt' options | yes |  |
+| `apt` | Configuration options for APT repository used to install Elasticsearch (only applies for Debian-based systems) | dict of `apt` [options](#options-for-main--elasticsearch--repository--apt) | yes |  |
 
 #### Options for `elasticsearch.repository.apt`
 
 |Option|Description|Type|Required|Default|
 |---|---|---|---|---|
-| `key_url` |  | str | no | https://artifacts.elastic.co/GPG-KEY-elasticsearch |
-| `repository` |  | str | no | https://artifacts.elastic.co/packages/{{ elasticsearch.version }}.x/apt |
+| `key_url` |  | str | no | `https://artifacts.elastic.co/GPG-KEY-elasticsearch` |
+| `repository` |  | str | no | `https://artifacts.elastic.co/packages/{{ elasticsearch.version }}.x/apt` |
 
 ## Dependencies
 - dehydrated

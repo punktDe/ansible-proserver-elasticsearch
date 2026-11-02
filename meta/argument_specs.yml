@@ -35,6 +35,14 @@ argument_specs:
               - If set to >=8, will require setting the password for the `elastic` superuser
                 (`elasticsearch.users.builtin.elastic.password), since security is enabled
                 by default starting with Elasticsearch 8.x
+          java_home:
+            type: "str"
+            required: false
+            description:
+              - The Java installation Elasticsearch runs with (FreeBSD only).
+                Written to `elasticsearch_java_home` in /usr/local/etc/rc.conf.d/elasticsearch
+              - Defaults to /usr/local/openjdk21 for Elasticsearch 8 on FreeBSD, and is empty otherwise
+              - Set to an empty value to keep the Java the Elasticsearch package was built with
           users:
             type: "dict"
             required: true

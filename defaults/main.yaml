@@ -3,6 +3,10 @@ elasticsearch:
   use_dehydrated: no
   domain: "{{ inventory_hostname }}"
   version: 8
+  java_home: >-
+    {%- if ansible_facts['system'] == 'FreeBSD' and elasticsearch.version | int == 8 -%}
+      /usr/local/openjdk21
+    {%- endif -%}
   users:
     builtin:
       elastic:

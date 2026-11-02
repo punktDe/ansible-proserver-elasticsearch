@@ -35,6 +35,32 @@
     mode: "u+rwx,g+rx"
     state: directory
 
+- name: Find heap sizes set outside of this role
+  when: elasticsearch['jvm.options']['-Xmx'] is not none
+  register: elasticsearch_heap_files
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  ansible.builtin.shell:
+    cmd: grep -sH '^-Xmx' jvm.options jvm.options.d/*.options
+    chdir: "{{ elasticsearch.prefix.config }}"
+
+# The 1g default is meant to be sized per host, so point at hosts where it replaces a different heap
+- name: Warn when this role overrides a heap size set elsewhere
+  when: elasticsearch_heap_conflicts | length > 0
+  vars:
+    elasticsearch_heap_conflicts: >-
+      {{ elasticsearch_heap_files.stdout_lines | default([])
+         | reject('match', 'jvm\.options\.d/zz-ansible\.options:')
+         | reject('search', (':-Xmx' ~ elasticsearch['jvm.options']['-Xmx']) | regex_escape ~ '$')
+         | list }}
+  ansible.builtin.debug:
+    msg:
+      - "WARNING: Elasticsearch runs with -Xmx{{ elasticsearch['jvm.options']['-Xmx'] }} from jvm.options.d/zz-ansible.options,"
+      - "which overrides these heap settings in {{ elasticsearch.prefix.config }}:"
+      - "{{ elasticsearch_heap_conflicts }}"
+      - "Check how much memory this host needs and set elasticsearch['jvm.options']['-Xms'] and ['-Xmx'] in the inventory."
+
 # ES reads jvm.options, then jvm.options.d/*.options by name, and the last value wins: zz- beats e.g. the proServer blueprint's heap-size.options
 - name: Configure Elasticsearch (jvm.options.d)
   register: jvm_configuration

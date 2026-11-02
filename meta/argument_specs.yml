@@ -134,6 +134,8 @@ argument_specs:
               - Allows to define JVM options (e.g. the heap size)
               - Written to jvm.options.d/zz-ansible.options, which Elasticsearch reads after jvm.options
                 and the other files in jvm.options.d, so these values win
+              - The heap (`-Xms`/`-Xmx`) defaults to 1g. Check how much memory each host needs and set it in the inventory.
+                The role prints a warning when another file sets a different `-Xmx`
               - Consult defaults/main.yml for options set by default
           repository:
             type: "dict"

@@ -33,7 +33,7 @@ Elasticsearch role for Proserver
 | `transport_security` | Settings for transport security (disabled by default) | dict of `transport_security` [options](#options-for-main--elasticsearch--transport_security) | yes |  |
 | `elasticsearch.yml` | Allows to define options included in the elasticsearch.yml file Consult defaults/main.yml for options set by default, and https://www.elastic.co/guide/en/elasticsearch/reference/current/settings.html for a guide on how to configure Elasticsearch | dict | yes |  |
 | `log4j2.properties` | Allows to define options included in the log4j2.properties file | dict | no |  |
-| `jvm.options` | Allows to define options included in the log4j2.properties file Consult defaults/main.yml for options set by default | dict | yes |  |
+| `jvm.options` | Allows to define JVM options (e.g. the heap size) Written to jvm.options.d/zz-ansible.options, which Elasticsearch reads after jvm.options and the other files in jvm.options.d, so these values win The heap (`-Xms`/`-Xmx`) defaults to 1g. Check how much memory each host needs and set it in the inventory. The role prints a warning when another file sets a different `-Xmx` Consult defaults/main.yml for options set by default | dict | yes |  |
 | `repository` |  | dict of `repository` [options](#options-for-main--elasticsearch--repository) | yes |  |
 | `plugins` | Will install the specified plugins using the `elasticsearch-plugin install` command | dict | no |  |
 | `http_proxy` | Specifies HTTP proxy to be used for Elasticsearch commands that require Internet access (e.g. elasticsearch-plugin) | str | no |  |

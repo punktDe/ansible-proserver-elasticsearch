@@ -4,6 +4,7 @@
     - name: Restart Elasticsearch
       when: >-
         jvm_configuration.changed or
+        jvm_options_cleanup.changed or
         es_configuration.changed or
         log4j2_configuration.changed or
         (java_home_configuration.changed | default(False)) or

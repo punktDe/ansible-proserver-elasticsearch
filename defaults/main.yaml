@@ -55,26 +55,21 @@ elasticsearch:
     node:
       name: "{{ inventory_hostname }}"
     path:
-      data: >-
-        {%- if ansible_facts['system'] == 'Linux' -%}
-          /var/lib/elasticsearch
-        {%- else -%}
-          /var/db/elasticsearch
-        {%- endif -%}
+      data: "{{ elasticsearch.prefix.data }}"
       logs: /var/log/elasticsearch
     xpack:
       security:
         enabled: true
-        transport: "{{ {'ssl': {'enabled': True, 'keystore': {'secure_password': '', 'path': '/etc/elasticsearch/cert.p12' if ansible_facts['system'] == 'Linux' else '/usr/local/etc/elasticsearch/cert.p12'}}} if elasticsearch.transport_security.ca_from else {'ssl': {'enabled': False}} }}"
+        transport: "{{ {'ssl': {'enabled': True, 'keystore': {'secure_password': '', 'path': elasticsearch.prefix.config ~ '/cert.p12'}}} if elasticsearch.transport_security.ca_from else {'ssl': {'enabled': False}} }}"
         http:
           ssl:
             enabled: false
       ml:
-        enabled: "{{ ansible_facts['system'] == 'Linux' }}"
+        enabled: false
   log4j2.properties: {}
   jvm.options:
-    "-Xms": 4g
-    "-Xmx": 4g
+    "-Xms": 1g
+    "-Xmx": 1g
     "-Djna.tmpdir": >-
       {%- if ansible_facts['system'] == 'Linux' -%}
         =/var/lib/elasticsearch/jna

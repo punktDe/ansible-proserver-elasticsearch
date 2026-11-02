@@ -28,18 +28,63 @@
     config_filepath: "{{ elasticsearch.prefix.config }}/log4j2.properties"
   notify: Restart Elasticsearch
 
-- name: Configure Elasticsearch (jvm.options)
-  register: jvm_configuration
-  ansible.builtin.lineinfile:
-    path: "{{ config_filepath }}"
-    regexp: "^{{ item.key | regex_escape }}"
-    line: "{{ item.key }}{{ item.value }}"
-    state: "{{ 'present' if item.value is not none else 'absent' }}"
-  loop_control:
-    label: "{{ config_filepath }} {{ item.key }}{{ item.value }}"
-  with_dict: "{{ elasticsearch['jvm.options'] }}"
+- name: Create directory for JVM options
+  ansible.builtin.file:
+    path: "{{ elasticsearch.prefix.config }}/jvm.options.d"
+    group: elasticsearch
+    mode: "u+rwx,g+rx"
+    state: directory
+
+- name: Find heap sizes set outside of this role
+  when: elasticsearch['jvm.options']['-Xmx'] is not none
+  register: elasticsearch_heap_files
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  ansible.builtin.shell:
+    cmd: grep -sH '^-Xmx' jvm.options jvm.options.d/*.options
+    chdir: "{{ elasticsearch.prefix.config }}"
+
+# The 1g default is meant to be sized per host, so point at hosts where it replaces a different heap
+- name: Warn when this role overrides a heap size set elsewhere
+  when: elasticsearch_heap_conflicts | length > 0
   vars:
-    config_filepath: "{{ elasticsearch.prefix.config }}/jvm.options"
+    elasticsearch_heap_conflicts: >-
+      {{ elasticsearch_heap_files.stdout_lines | default([])
+         | reject('match', 'jvm\.options\.d/zz-ansible\.options:')
+         | reject('search', (':-Xmx' ~ elasticsearch['jvm.options']['-Xmx']) | regex_escape ~ '$')
+         | list }}
+  ansible.builtin.debug:
+    msg:
+      - "WARNING: Elasticsearch runs with -Xmx{{ elasticsearch['jvm.options']['-Xmx'] }} from jvm.options.d/zz-ansible.options,"
+      - "which overrides these heap settings in {{ elasticsearch.prefix.config }}:"
+      - "{{ elasticsearch_heap_conflicts }}"
+      - "Check how much memory this host needs and set elasticsearch['jvm.options']['-Xms'] and ['-Xmx'] in the inventory."
+
+# ES reads jvm.options, then jvm.options.d/*.options by name, and the last value wins: zz- beats e.g. the proServer blueprint's heap-size.options
+- name: Configure Elasticsearch (jvm.options.d)
+  register: jvm_configuration
+  ansible.builtin.copy:
+    dest: "{{ elasticsearch.prefix.config }}/jvm.options.d/zz-ansible.options"
+    owner: root
+    group: elasticsearch
+    mode: "0644"
+    content: |
+      # Managed by Ansible (ansible-proserver-elasticsearch)
+      {% for key, value in elasticsearch['jvm.options'].items() if value is not none %}
+      {{ key }}{{ value }}
+      {% endfor %}
+  notify: Restart Elasticsearch
+
+- name: Remove options from jvm.options that are now set in jvm.options.d
+  register: jvm_options_cleanup
+  ansible.builtin.lineinfile:
+    path: "{{ elasticsearch.prefix.config }}/jvm.options"
+    regexp: "^{{ item.key | regex_escape }}"
+    state: absent
+  loop_control:
+    label: "{{ item.key }}"
+  with_dict: "{{ elasticsearch['jvm.options'] }}"
   notify: Restart Elasticsearch
 
 - name: Configure Java for Elasticsearch (FreeBSD)
@@ -82,6 +127,28 @@
   with_items:
     - "{{ elasticsearch.prefix.config }}/scripts"
   notify: Restart Elasticsearch
+
+- name: Look for data in the default and the configured data directory
+  register: elasticsearch_data_dirs
+  check_mode: false
+  loop:
+    - "{{ '/var/lib/elasticsearch' if ansible_facts['system'] == 'Linux' else '/var/db/elasticsearch' }}"
+    - "{{ elasticsearch['elasticsearch.yml'].path.data }}"
+  ansible.builtin.find:
+    paths: "{{ item }}"
+    file_type: any
+
+# Before 4.0, path.data ignored prefix.data, so a host that set only prefix.data now switches to an empty directory
+- name: Warn when Elasticsearch switches to an empty data directory
+  when:
+    - elasticsearch_data_dirs.results[0].item != elasticsearch_data_dirs.results[1].item
+    - elasticsearch_data_dirs.results[0].matched > 0
+    - elasticsearch_data_dirs.results[1].matched == 0
+  ansible.builtin.debug:
+    msg:
+      - "WARNING: Elasticsearch now stores its data in {{ elasticsearch_data_dirs.results[1].item }}, which is empty."
+      - "The existing data is in {{ elasticsearch_data_dirs.results[0].item }}."
+      - "Stop Elasticsearch and copy it over, or set elasticsearch['elasticsearch.yml'].path.data to the old directory."
 
 - name: Create directory for Elasticsearch data
   ansible.builtin.file:

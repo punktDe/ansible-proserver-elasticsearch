@@ -128,6 +128,28 @@
     - "{{ elasticsearch.prefix.config }}/scripts"
   notify: Restart Elasticsearch
 
+- name: Look for data in the default and the configured data directory
+  register: elasticsearch_data_dirs
+  check_mode: false
+  loop:
+    - "{{ '/var/lib/elasticsearch' if ansible_facts['system'] == 'Linux' else '/var/db/elasticsearch' }}"
+    - "{{ elasticsearch['elasticsearch.yml'].path.data }}"
+  ansible.builtin.find:
+    paths: "{{ item }}"
+    file_type: any
+
+# Before 4.0, path.data ignored prefix.data, so a host that set only prefix.data now switches to an empty directory
+- name: Warn when Elasticsearch switches to an empty data directory
+  when:
+    - elasticsearch_data_dirs.results[0].item != elasticsearch_data_dirs.results[1].item
+    - elasticsearch_data_dirs.results[0].matched > 0
+    - elasticsearch_data_dirs.results[1].matched == 0
+  ansible.builtin.debug:
+    msg:
+      - "WARNING: Elasticsearch now stores its data in {{ elasticsearch_data_dirs.results[1].item }}, which is empty."
+      - "The existing data is in {{ elasticsearch_data_dirs.results[0].item }}."
+      - "Stop Elasticsearch and copy it over, or set elasticsearch['elasticsearch.yml'].path.data to the old directory."
+
 - name: Create directory for Elasticsearch data
   ansible.builtin.file:
     path: "{{ elasticsearch.prefix.data }}"

@@ -3,7 +3,9 @@ set -e -u -o pipefail
 
 elasticsearch_bin={{ elasticsearch.prefix.bin|quote }}
 elasticsearch_plugins={{ elasticsearch.prefix.plugins|quote }}
-elasticsearch_version="$(sudo -u elasticsearch -- "${elasticsearch_bin}/elasticsearch" --version | grep -oP '(?<=Version: )[0-9\.]+' | head -n 1)"
+# elasticsearch and elasticsearch-plugin refuse to run without it, and sudo resets the environment
+export ES_PATH_CONF={{ elasticsearch.prefix.config|quote }}
+elasticsearch_version="$(sudo --preserve-env=ES_PATH_CONF -u elasticsearch -- "${elasticsearch_bin}/elasticsearch" --version | grep -oP '(?<=Version: )[0-9\.]+' | head -n 1)"
 
 {% if elasticsearch.http_proxy -%}
 export ES_JAVA_OPTS="-Dhttp.proxyHost={{ elasticsearch.http_proxy|urlsplit('hostname') }} -Dhttp.proxyPort={{ elasticsearch.http_proxy|urlsplit('port') }} -Dhttps.proxyHost={{ elasticsearch.http_proxy|urlsplit('hostname') }} -Dhttps.proxyPort={{ elasticsearch.http_proxy|urlsplit('port') }}"

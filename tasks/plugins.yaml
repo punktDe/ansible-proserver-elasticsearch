@@ -38,6 +38,7 @@
     - name: Get installed Elasticsearch plugins
       changed_when: false
       register: elasticsearch_plugin_list
+      environment: "{{ es_env }}"
       ansible.builtin.command:
         cmd: "{{ elasticsearch.prefix.bin | quote }}/elasticsearch-plugin list"
 
@@ -46,8 +47,9 @@
       when: item not in elasticsearch_plugin_list.stdout_lines
       changed_when: yes
       notify: Restart Elasticsearch
-      environment:
-        ES_JAVA_OPTS: >
+      environment: "{{ es_env | combine({'ES_JAVA_OPTS': elasticsearch_plugin_java_opts}) }}"
+      vars:
+        elasticsearch_plugin_java_opts: >
           {% if elasticsearch.http_proxy %}
           -Dhttp.proxyHost={{ elasticsearch.http_proxy | urlsplit('hostname') }}
           -Dhttp.proxyPort={{ elasticsearch.http_proxy | urlsplit('port') }}
